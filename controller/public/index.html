@@ -1,0 +1,94 @@
+<html>
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0"/> <!--320-->
+    <script src="js/jquery-2.1.3.js"></script>
+    <style type="text/css">
+     *{
+       margin: 0px;
+       padding: 0px;
+     }
+     /* attempt to prevent scrolling */
+      html, body {
+        overflow-x: hidden;
+      }
+      body {
+        position: relative
+      }
+      .vtrack{
+        height: 100px;
+        width: 30px;
+        background: #DDD;
+        position: relative;
+        float: left;
+      }
+      .grabber{
+        width: 30px;
+        height: 30px;
+        position: absolute;
+        top: 0%;
+        background: #F0F;
+      }
+      #container{
+        border: 2px #000 solid;
+        background: #FFF;
+        margin-left: auto;
+        margin-right: auto;
+        margin-top: 0px;
+        position: relative;
+      }
+      #settings{
+        position: absolute;
+        top: 10px;
+        left: 50px;
+      }
+      #middle_section{
+        float: left;
+        height: 100px;
+        padding-top: 40px;
+      }
+    </style>
+  </head>
+  <!--
+  Things learned
+  ==============
+  It's not worth using percentages on phones, as they suck when you switch
+  from portrait to landscape. (I'm sure if I was working on a full-fledged site
+  I wouldn't be so quick to switch). Since this is a simple one-screen application
+  I'd rather just use exact pixel counts.
+
+  I'll need the user to do the following:
+  - enter the game id
+  - enter full screen
+  - switch to landscape
+  -->
+  <body>
+    <main id="container">
+      <section id="settings">
+        <button id="btn-fullscreen">Go Fullscreen</button>
+      </section>
+      <div id="left_lever" class="vtrack" data-css-margin-top="5%" data-css-height="90%" data-css-margin-left="2%" data-css-width="5%">
+        <div class="grabber" data-css-width="5%"></div>
+      </div>
+      <section id="middle_section" data-css-width="86%">
+        Middle Section
+      </section>
+      <div id="right_lever" class="vtrack" data-css-margin-top="5%" data-css-height="90%" data-css-margin-right="2%" data-css-width="5%">
+        <div class="grabber" data-css-width="5%"></div>
+      </div>
+    </main>
+    <script src="js/VerticalSlider.js"></script>
+    <script src="js/ui.js"></script>
+    <script src="js/windowResize.js"></script>
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+      var socket = io.connect('http://localhost:8000');
+      socket.emit("initialize", {
+        "type" : "controller",
+        "game_id" : 1234
+      });
+      UI.left_slider.onChange(function(ratio){
+        socket.emit("update", {"left_ratio": ratio});
+      });
+    </script>
+  </body>
+</html>

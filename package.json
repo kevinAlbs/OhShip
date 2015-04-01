@@ -1,0 +1,15 @@
+{
+  "name": "ships",
+  "version": "1.0.0",
+  "description": "A multiplayer web game using phone controllers",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://kevinalbertson@bitbucket.org/kevinalbertson/ships.git"
+  },
+  "author": "Kevin Albertson",
+  "license": "ISC"
+}
