@@ -15,10 +15,14 @@ var UI = (function(){
     else {
       cancelFullScreen.call(doc);
     }
+    window.setTimeout(function(){WINDOW_RESIZE.fixWindow();}, 1000);
   }
 
   that.left_slider = new VerticalSlider(document.querySelector("#left_lever"));
   that.right_slider = new VerticalSlider(document.querySelector("#right_lever"));
+  that.feedback = function(msg){
+    $("#middle_section").html(msg);
+  }
   $("#btn-fullscreen").on("click", toggleFullScreen);
 
   return that;

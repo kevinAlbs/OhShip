@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 <html>
   <head>
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0"/> <!--320-->
@@ -20,6 +21,13 @@
         background: #DDD;
         position: relative;
         float: left;
+      }
+      .vtrack .clickarea{
+        height: 100px;
+        width: 50px;
+        position: relative;
+        background: rgba(200, 0, 0, .1);
+        z-index: 16;
       }
       .grabber{
         width: 30px;
@@ -67,6 +75,7 @@
         <button id="btn-fullscreen">Go Fullscreen</button>
       </section>
       <div id="left_lever" class="vtrack" data-css-margin-top="5%" data-css-height="90%" data-css-margin-left="2%" data-css-width="5%">
+        <div class="clickarea" data-css-width="10%" data-css-margin-left="-2.5%" data-css-height="90%"></div>
         <div class="grabber" data-css-width="5%"></div>
       </div>
       <section id="middle_section" data-css-width="86%">
@@ -74,6 +83,7 @@
       </section>
       <div id="right_lever" class="vtrack" data-css-margin-top="5%" data-css-height="90%" data-css-margin-right="2%" data-css-width="5%">
         <div class="grabber" data-css-width="5%"></div>
+        <div class="clickarea" data-css-width="10%" data-css-margin-left="-2.5%" data-css-height="90%"></div>
       </div>
     </main>
     <script src="js/VerticalSlider.js"></script>
@@ -89,6 +99,7 @@
       UI.left_slider.onChange(function(ratio){
         socket.emit("update", {"left_ratio": ratio});
       });
+
     </script>
   </body>
 </html>

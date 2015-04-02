@@ -3,11 +3,57 @@ function VerticalSlider(el){
   el = $(el);
   var state = "sleep" //valid states are sleep, awake (like focused), and active (being touched)
       , grabber = el.find(".grabber")
-      , changeCallbacks = []
+      , area = el.find(".clickarea")
+      , change_callbacks = []
+      , grace_scale = 1 //scaling factor of width for grace area
       ;
 
-  function awaken(){
-    state = "awake";
+  /*
+  The grace_scale specifies the area where finger/cursor can be and still have
+  have the slider remain active. This is multiplied by the bar width.
+  @param x float
+  */
+  function inGraceArea(x){
+    var bar_x_center = el.offset().left + el.width()/2
+        , width = el.width()
+        ;
+    if(Math.abs(x - bar_x_center) > width * grace_scale){
+        return false;
+    }
+    return true;
+  }
+
+  /*
+  @param e object event object
+  @param type string either "mouse" or "touch"
+  @return {x:float,y:float} for event click/touch
+  */
+  function getCoords(e, type){
+    var x = null
+        , y = null
+        ;
+    if(type == "mouse"){
+      y = e.pageY;
+      x = e.pageX;
+    } else if (type == "touch"){
+      console.log(e);
+      //use most recent touch
+      for(var i = 0; i < e.changedTouches.length; i++){
+        if(e.changedTouches[i].target == area[0]){
+          y = e.changedTouches[i].pageY;
+          x = e.changedTouches[i].pageX;
+        }
+      }
+    }
+    return {"x" : x, "y" : y};
+  }
+
+  function awaken(e, type){
+    var coords = getCoords(e, type);
+    if(inGraceArea(coords.x)){
+      console.log("Awaken");
+      state = "awake";
+    }
   }
 
   /*
@@ -16,28 +62,20 @@ function VerticalSlider(el){
   */
   function activate(e, type){
     if(state == "awake" || state == "active"){
-      var page_y = 0
+      var coords = getCoords(e, type)
           , grabber_height = grabber.height()
           , height = el.height()
           , bar_y = el.offset().top
           , max_y = height - grabber_height
           ;
-      if(type == "mouse"){
-        page_y = e.pageY;
-      } else if (type == "touch"){
-        var page_y = -1;
-        //use most recent touch
-        for(var i = 0; i < e.changedTouches.length; i++){
-          if(e.changedTouches[i].target == el[0] || e.changedTouches[i].target == grabber[0]){
-            page_y = e.changedTouches[i].pageY;
-          }
-        }
-        if(page_y == -1){
-          return;
-        }
+
+      if(!inGraceArea(coords.x)){
+        sleep();
+        return;
       }
+
       //move move yo ass to the cursor
-      var new_y = page_y - bar_y
+      var new_y = coords.y - bar_y
       if(new_y < 0){
         new_y = 0;
       } else if (new_y > max_y){
@@ -56,6 +94,14 @@ function VerticalSlider(el){
     activate(e, "touch");
   }
 
+  function awakenMouse(e){
+    awaken(e, "mouse");
+  }
+
+  function awakenTouch(e){
+    awaken(e, "touch");
+  }
+
   function sleep(){
       state = "sleep";
   }
@@ -64,19 +110,24 @@ function VerticalSlider(el){
   @param ratio float range is [0,1]
   */
   function notifyCallbacks(ratio){
-    for(var i = 0; i < changeCallbacks.length; i++){
-      changeCallbacks[i].call(window, ratio);
+    for(var i = 0; i < change_callbacks.length; i++){
+      change_callbacks[i].call(window, ratio);
     }
   }
 
   that.onChange = function(callback){
-    changeCallbacks.push(callback);
+    change_callbacks.push(callback);
   }
 
-  el.on("touchstart", awaken).on("mousedown", awaken);
-  el[0].addEventListener("touchmove", activateTouch);
+  document.body.addEventListener("touchstart", awakenTouch);
+  document.body.addEventListener("mousedown", awakenMouse);
+  document.body.addEventListener("touchmove", activateTouch);
   document.body.addEventListener("mousemove", activateMouse);
-  $(document.body).on("touchend", sleep).on("mouseup", sleep);
+
+  /*
+  This ought to change so it doesn't put all to sleep if only one is released
+  */
+  $(document.body).on("mouseup", sleep);
 
   return that;
 }

@@ -11,20 +11,6 @@ var WINDOW_RESIZE = (function(){
       , min_height = 150
       ;
 
-  function fixWindow(){
-    var ww = $(window).width();
-    var wh = $(window).height();
-    var width = ww > wh ? ww : wh;
-    var height = ww > wh ? wh : ww;
-    if(width > max_width) width = max_width;
-    if(width < min_width) width = min_width;
-    if(height > max_height) height = max_height;
-    if(height < min_height) height = min_height;
-    $("#container").width(width);
-    $("#container").height(height);
-    fixCSS(width, height);
-  }
-
   function percentToNum(perc){
     return parseInt(perc.substring(0, perc.length - 1));
   }
@@ -49,8 +35,22 @@ var WINDOW_RESIZE = (function(){
     fixProperty("margin-right", width);
   }
 
-  window.addEventListener("orientationchange", fixWindow, false);
-  fixWindow();
+  that.fixWindow = function(){
+    var ww = $(window).width();
+    var wh = $(window).height();
+    var width = ww > wh ? ww : wh;
+    var height = ww > wh ? wh : ww;
+    if(width > max_width) width = max_width;
+    if(width < min_width) width = min_width;
+    if(height > max_height) height = max_height;
+    if(height < min_height) height = min_height;
+    $("#container").width(width);
+    $("#container").height(height);
+    fixCSS(width, height);
+  }
+
+  window.addEventListener("orientationchange", function(){that.fixWindow();}, false);
+  that.fixWindow();
 
   return that;
 }());
