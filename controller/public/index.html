@@ -18,7 +18,7 @@
       .vtrack{
         height: 100px;
         width: 30px;
-        background: #DDD;
+        background: #BFD2FF;
         position: relative;
         float: left;
       }
@@ -26,15 +26,18 @@
         height: 100px;
         width: 50px;
         position: relative;
-        background: rgba(200, 0, 0, .1);
+        background: transparent;
         z-index: 16;
       }
       .grabber{
         width: 30px;
-        height: 30px;
+        height: 20px;
         position: absolute;
         top: 0%;
-        background: #F0F;
+        left: -2px;
+        background: #594AFF;
+        border: 2px #5B46E3 solid;
+        border-radius: 7px;
       }
       #container{
         border: 2px #000 solid;
@@ -98,6 +101,9 @@
       });
       UI.left_slider.onChange(function(ratio){
         socket.emit("update", {"left_ratio": ratio});
+      });
+      UI.right_slider.onChange(function(ratio){
+        socket.emit("update", {"right_ratio": ratio});
       });
 
     </script>

@@ -35,6 +35,7 @@ function Controller(socket, config){
 
   player_id = games[game_id].game.addPlayer();
   socket.on("update", function(data){
+    console.log("Recieving controller update for player " + player_id);
     games[game_id].game.update(player_id, data);
   });
   socket.join("controller_" + game_id);
@@ -52,13 +53,10 @@ function Game(socket, config){
       ;
 
   that.update = function(player_id, data){
-    if(data.hasOwnProperty("left_ratio")){
-      socket.emit("update", {
-        "player_id" : player_id,
-        "data" : data
-      });
-      console.log("Left ratio: " + data["left_ratio"]);
-    }
+    socket.emit("update", {
+      "player_id" : player_id,
+      "data" : data
+    });
   };
 
   that.addPlayer = function(){

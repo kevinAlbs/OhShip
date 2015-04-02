@@ -36,7 +36,6 @@ function VerticalSlider(el){
       y = e.pageY;
       x = e.pageX;
     } else if (type == "touch"){
-      console.log(e);
       //use most recent touch
       for(var i = 0; i < e.changedTouches.length; i++){
         if(e.changedTouches[i].target == area[0]){
@@ -75,7 +74,7 @@ function VerticalSlider(el){
       }
 
       //move move yo ass to the cursor
-      var new_y = coords.y - bar_y
+      var new_y = coords.y - bar_y - grabber_height/2
       if(new_y < 0){
         new_y = 0;
       } else if (new_y > max_y){
