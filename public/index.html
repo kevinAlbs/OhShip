@@ -2,9 +2,13 @@
 <html>
   <head>
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0"/> <!--320-->
+    <script src="js/phaser.min.js"></script>
   </head>
 
   <body>
+    <div id="game"></div>
+
+    <script src="js/main.js"></script>
     <script src="/socket.io/socket.io.js"></script>
     <script>
       var socket = io.connect('http://localhost:8000');
