@@ -1,8 +1,15 @@
-(function(){
-  var game = new Phaser.Game(800,600,Phaser.AUTO,document.getElementById("game"), states);
-  var states = {};
-  states.preload = function(){};
-  states.create = function(){};
-  states.update = function(){};
-  states.render = function(){};
-}())
+requirejs.config({
+  baseUrl : "js"
+});
+
+require([
+  'PhaserGame'
+  , 'BootState'
+  , 'GameplayState'
+], function(PhaserGame, BootState, GameplayState){
+    var game = new PhaserGame(800,600,document.getElementById("game"));
+    //add a state for each "screen"
+    game.state.add('Boot', BootState);
+    game.state.add('Gameplay', GameplayState);
+    game.state.start('Gameplay');
+});
