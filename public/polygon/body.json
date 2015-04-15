@@ -1,0 +1,22 @@
+	{ 
+		
+		"body": [
+			
+				{
+					"density": 2, "friction": 0, "bounce": 0, 
+					"filter": { "categoryBits": 1, "maskBits": 65535 },
+					"shape": [   38, 24  ,  40, 60  ,  10, 60  ,  2, 25  ,  13, 1  ,  27, 1  ]
+				}  ,
+				{
+					"density": 2, "friction": 0, "bounce": 0, 
+					"filter": { "categoryBits": 1, "maskBits": 65535 },
+					"shape": [   10, 66  ,  10, 60  ,  30, 60  ,  30, 66  ]
+				}  ,
+				{
+					"density": 2, "friction": 0, "bounce": 0, 
+					"filter": { "categoryBits": 1, "maskBits": 65535 },
+					"shape": [   2, 25  ,  10, 60  ,  0, 60  ]
+				}  
+		]
+		
+	}

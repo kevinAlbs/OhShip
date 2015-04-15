@@ -19,9 +19,11 @@ define([], function(){
       that._body.body = new Phaser.Physics.P2.Body(game, that._body, 30, 70, 20);
       that._body.body.debug = true;
       that._body.anchor.set(0.5);
+      that._body.body.clearShapes();
+      that._body.body.loadPolygon("body_polygon", "body");
 
-      game.physics.p2.createLockConstraint(that._left_engine, that._body, [-30,30]);
-      game.physics.p2.createLockConstraint(that._right_engine, that._body, [30,30]);
+      game.physics.p2.createLockConstraint(that._left_engine, that._body, [-15,30]);
+      game.physics.p2.createLockConstraint(that._right_engine, that._body, [15,30]);
   };
 
   Ship.prototype._applyVelocity = function(engine, value){
@@ -51,6 +53,7 @@ define([], function(){
     */
     game.load.image("engine", "img/engine.png");
     game.load.image("body", "img/body.png");
+    game.load.physics("body_polygon", "polygon/body.json");
   }
 
   return Ship;

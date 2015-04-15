@@ -7,3 +7,6 @@ more advanced physical constraints (e.g. harpoon) will be simpler
 ## Low Priority ##
 - Remove jQuery dependency in controller
 - Design a realistic theme for the controller
+
+## Notes ##
+- In PhysicsEditor, export as Lime+Corona (JSON)
