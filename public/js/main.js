@@ -4,8 +4,8 @@ requirejs.config({
 
 require([
   'PhaserGame'
-  , 'BootState'
-  , 'GameplayState'
+  , 'state/BootState'
+  , 'state/GameplayState'
 ], function(PhaserGame, BootState, GameplayState){
     var game = new PhaserGame(800,600,document.getElementById("game"));
     //add a state for each "screen"
