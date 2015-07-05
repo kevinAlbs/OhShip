@@ -1,27 +1,11 @@
 function VerticalSlider(el){
   var that = this;
   el = $(el);
-  var state = "sleep" //valid states are sleep, awake (like focused), and active (being touched)
-      , grabber = el.find(".grabber")
+  var grabber = el.find(".grabber")
       , area = el.find(".clickarea")
       , change_callbacks = []
-      , grace_scale = 1 //scaling factor of width for grace area
+      , mouse_pressed = false
       ;
-
-  /*
-  The grace_scale specifies the area where finger/cursor can be and still have
-  have the slider remain active. This is multiplied by the bar width.
-  @param x float
-  */
-  function inGraceArea(x){
-    var bar_x_center = el.offset().left + el.width()/2
-        , width = el.width()
-        ;
-    if(Math.abs(x - bar_x_center) > width * grace_scale){
-        return false;
-    }
-    return true;
-  }
 
   /*
   @param e object event object
@@ -47,31 +31,20 @@ function VerticalSlider(el){
     return {"x" : x, "y" : y};
   }
 
-  function awaken(e, type){
-    var coords = getCoords(e, type);
-    if(inGraceArea(coords.x)){
-      console.log("Awaken");
-      state = "awake";
-    }
-  }
-
   /*
   Event for touch/mouse move (normal NOT jquery event)
   @param type String either "mouse" or "touch"
   */
-  function activate(e, type){
-    if(state == "awake" || state == "active"){
+  function move(e, type){
+      if(type == "mouse" && !mouse_pressed){
+        return;
+      }
       var coords = getCoords(e, type)
           , grabber_height = grabber.height()
           , height = el.height()
           , bar_y = el.offset().top
           , max_y = height - grabber_height
           ;
-
-      if(!inGraceArea(coords.x)){
-        sleep();
-        return;
-      }
 
       //move move yo ass to the cursor
       var new_y = coords.y - bar_y - grabber_height/2
@@ -82,28 +55,26 @@ function VerticalSlider(el){
       }
       grabber.css("top",  new_y + "px");
       notifyCallbacks(new_y / max_y);
-    }
+    
   }
 
-  function activateMouse(e){
-    activate(e, "mouse");
+
+  function moveMouse(e){
+    move(e, "mouse");
   }
 
-  function activateTouch(e){
-    activate(e, "touch");
+  function moveTouch(e){
+    move(e, "touch");
   }
 
-  function awakenMouse(e){
-    awaken(e, "mouse");
+  function mouseDown(e){
+    mouse_pressed = true;
   }
 
-  function awakenTouch(e){
-    awaken(e, "touch");
+  function mouseUp(e){
+    mouse_pressed = false;
   }
 
-  function sleep(){
-      state = "sleep";
-  }
 
   /*
   @param ratio float range is [0,1]
@@ -118,15 +89,10 @@ function VerticalSlider(el){
     change_callbacks.push(callback);
   }
 
-  document.body.addEventListener("touchstart", awakenTouch);
-  document.body.addEventListener("mousedown", awakenMouse);
-  document.body.addEventListener("touchmove", activateTouch);
-  document.body.addEventListener("mousemove", activateMouse);
-
-  /*
-  This ought to change so it doesn't put all to sleep if only one is released
-  */
-  $(document.body).on("mouseup", sleep);
+  area[0].addEventListener("mousedown", mouseDown);
+  area[0].addEventListener("mouseup", mouseUp);
+  area[0].addEventListener("mousemove", moveMouse);
+  area[0].addEventListener("touchmove", moveTouch);
 
   return that;
 }

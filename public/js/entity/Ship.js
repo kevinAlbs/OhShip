@@ -21,6 +21,9 @@ define([], function(){
       that._body.anchor.set(0.5);
       that._body.body.clearShapes();
       that._body.body.loadPolygon("body_polygon", "body");
+      // angularDamping gives angular resistance feel, as if
+      // travelling through thick medium
+      that._body.body.angularDamping = .8;
 
       game.physics.p2.createLockConstraint(that._left_engine, that._body, [-15,30]);
       game.physics.p2.createLockConstraint(that._right_engine, that._body, [15,30]);

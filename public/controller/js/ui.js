@@ -15,7 +15,6 @@ var UI = (function(){
     else {
       cancelFullScreen.call(doc);
     }
-    window.setTimeout(function(){WINDOW_RESIZE.fixWindow();}, 1000);
   }
 
   that.left_slider = new VerticalSlider(document.querySelector("#left_lever"));

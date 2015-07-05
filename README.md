@@ -10,3 +10,4 @@ more advanced physical constraints (e.g. harpoon) will be simpler
 
 ## Notes ##
 - In PhysicsEditor, export as Lime+Corona (JSON)
+- Game ID should be only letters, so phone keyboard need not be switched

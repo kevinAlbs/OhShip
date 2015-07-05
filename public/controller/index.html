@@ -15,47 +15,72 @@
       body {
         position: relative
       }
-      .vtrack{
+      .vtrack {
+        position: relative;
+      }
+      .vtrack .track{
         height: 100px;
-        width: 30px;
+        width: 20px;
         background: #BFD2FF;
         position: relative;
-        float: left;
+        margin: 0px auto;
       }
       .vtrack .clickarea{
-        height: 100px;
-        width: 50px;
-        position: relative;
-        background: transparent;
+        position: absolute;
+        width: 100%;
+        height: 100%;
         z-index: 16;
       }
-      .grabber{
+      .vtrack .track .grabber{
         width: 30px;
         height: 20px;
         position: absolute;
         top: 0%;
-        left: -2px;
+        left: -5px;
         background: #594AFF;
-        border: 2px #5B46E3 solid;
-        border-radius: 7px;
+        border-radius: 5px;
+        z-index: 8;
       }
       #container{
-        border: 2px #000 solid;
         background: #FFF;
         margin-left: auto;
         margin-right: auto;
         margin-top: 0px;
         position: relative;
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+        height: 100%;
       }
-      #settings{
-        position: absolute;
-        top: 10px;
-        left: 50px;
+      #container .top {
+        flex-grow: 1;
+        background: rgb(200,255,255);
       }
-      #middle_section{
-        float: left;
-        height: 100px;
-        padding-top: 40px;
+      #container #controls {
+        display: flex;
+        flex-grow: 10;
+      }
+      #container #controls .left {
+        flex-grow: 1;
+        background: rgb(255,255,255);
+      }
+      #container #controls .middle {
+        flex-grow: 20;
+        background: rgb(255,255,200);
+      }
+      #container #controls .right {
+        flex-grow: 1;
+        background: rgb(255,200,255);
+      }
+      .btn {
+        background: #000;
+        color: #FFF;
+        border-radius: 3px;
+        padding: 3px;
+        cursor: pointer;  
+        font-family: "Helvetica", "Arial";
+        font-size: 12px;
+        display: inline-block;
       }
     </style>
   </head>
@@ -74,24 +99,35 @@
   -->
   <body>
     <main id="container">
-      <section id="settings">
-        <button id="btn-fullscreen">Go Fullscreen</button>
+      <section class="top">
+        <div class="btn" id="btn-fullscreen">Go Fullscreen</div>
       </section>
-      <div id="left_lever" class="vtrack" data-css-margin-top="5%" data-css-height="90%" data-css-margin-left="2%" data-css-width="5%">
-        <div class="clickarea" data-css-width="10%" data-css-margin-left="-2.5%" data-css-height="90%"></div>
-        <div class="grabber" data-css-width="5%"></div>
-      </div>
-      <section id="middle_section" data-css-width="86%">
-        Middle Section
+      <section id="controls">
+        <section class="left">
+          <div id="left_lever" class="vtrack">
+            <div class="clickarea"></div>
+            <div class="track">
+              <div class="grabber"></div>
+            </div>
+          </div>
+        </section>
+        <section class="middle">
+          <div class="fire btn" data-fire="left">Fire Left</div>
+          <div class="fire btn" data-fire="right">Fire Right</div>
+        </section>
+        <section class="right">
+          <div id="right_lever" class="vtrack">
+            <div class="clickarea"></div>
+            <div class="track">
+              <div class="grabber"></div>
+            </div>
+          </div>
+        </section>
       </section>
-      <div id="right_lever" class="vtrack" data-css-margin-top="5%" data-css-height="90%" data-css-margin-right="2%" data-css-width="5%">
-        <div class="grabber" data-css-width="5%"></div>
-        <div class="clickarea" data-css-width="10%" data-css-margin-left="-2.5%" data-css-height="90%"></div>
-      </div>
     </main>
+
     <script src="js/VerticalSlider.js"></script>
     <script src="js/ui.js"></script>
-    <script src="js/windowResize.js"></script>
     <script src="/socket.io/socket.io.js"></script>
     <script>
       var socket = io.connect('http://localhost:8000');
