@@ -33,9 +33,9 @@
       }
       .vtrack .track .grabber{
         width: 30px;
-        height: 20px;
+        height: 8%;
         position: absolute;
-        top: 0%;
+        top: 44%;
         left: -5px;
         background: #594AFF;
         border-radius: 5px;
@@ -130,7 +130,7 @@
     <script src="js/ui.js"></script>
     <script src="/socket.io/socket.io.js"></script>
     <script>
-      var socket = io.connect('http://localhost:8000');
+      var socket = io.connect('http://192.168.1.7:8000');
       socket.emit("initialize", {
         "type" : "controller",
         "game_id" : 1234
