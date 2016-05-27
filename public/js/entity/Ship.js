@@ -21,17 +21,17 @@ define(["entity/Entity", "core/Collision"], function(Entity, Collision){
       var y = opt.y;
 
       that._left_engine = game.add.sprite(x - 15, y + 30, "engine");
-      game.physics.p2.enable(that._left_engine, true);
+      game.physics.p2.enable(that._left_engine, !true);
       that._left_engine.body.angle = 0;
 
       that._right_engine = game.add.sprite(x + 15, y + 30, "engine");
-      game.physics.p2.enable(that._right_engine, true);
+      game.physics.p2.enable(that._right_engine, !true);
       that._right_engine.body.angle = 0;
 
       that._body = game.add.sprite(x, y, "body");
       //need to instantiate to specify mass (last param)
       that._body.body = new Phaser.Physics.P2.Body(game, that._body, x, y, 20);
-      that._body.body.debug = true;
+      that._body.body.debug = !true;
       that._body.anchor.set(0.5);
       that._body.body.clearShapes();
       that._body.body.loadPolygon("body_polygon", "body");
@@ -53,6 +53,17 @@ define(["entity/Entity", "core/Collision"], function(Entity, Collision){
       game.physics.p2.createLockConstraint(that._left_engine, that._body, [-15,30]);
       game.physics.p2.createLockConstraint(that._right_engine, that._body, [15,30]);
       
+      // test the difference for pixels
+      var explosionBMP = game.add.bitmapData(17, 17);
+      explosionBMP.ctx.drawImage(game.cache.getImage("explosion"),0,0);
+
+      var currentBMP = game.add.bitmapData(100,100);
+      currentBMP.add(this._body.texture);
+
+      this._body.loadTexture(currentBMP);
+      
+
+
   };
 
   Ship.prototype = Object.create(Entity.prototype);
@@ -124,6 +135,7 @@ define(["entity/Entity", "core/Collision"], function(Entity, Collision){
     game.load.image("engine", "img/engine.png");
     game.load.image("body", "img/body.png");
     game.load.physics("body_polygon", "polygon/body.json");
+    game.load.image("explosion", "img/explosion.png");
   };
 
   return Ship;

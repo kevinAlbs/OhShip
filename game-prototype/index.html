@@ -1,0 +1,81 @@
+<!doctype html>
+
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+
+    <title>Game Prototype</title>
+    <meta name="description" content="">
+    <meta name="author" content="Kevin Albertson">
+
+    <style type="text/css">
+        #game {
+            width: 800px;
+            margin: 10px auto;
+        }
+    </style>
+
+    <!--[if lt IE 9]>
+    <script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+</head>
+
+<body>
+    <div id='game'></div>
+    <label>Left Engine</label><input id="left_engine" type="range" min="-100" max="100" value="0"/><br/>
+    <label>Right Engine</label><input id="right_engine" type="range" min="-100" max="100" value="0"/>
+    <script src="pixi.js"></script>
+    <script>
+        var stage = new PIXI.Container();
+        var renderer = PIXI.autoDetectRenderer(800, 400);
+        renderer.backgroundColor = 0x4b84f8;
+ 
+        document.getElementById('game').appendChild(renderer.view);
+
+        window.requestAnimationFrame( animate );
+
+        var texture = PIXI.Texture.fromImage("ship.png");
+
+        var shipShadow = new PIXI.Sprite(texture);
+        shipShadow.tint = 0x20160c;
+
+        var left = 0, right = 0;
+
+        var ship = new PIXI.Sprite(texture);
+        ship.anchor.x = .5;
+        ship.anchor.y = .5;
+        ship.position.x = 100;
+        ship.position.y = 150;
+
+        shipShadow.anchor.x = .5;
+        shipShadow.anchor.y = .5;
+        shipShadow.position.x = 100;
+        shipShadow.position.y = 152;
+
+        
+        stage.addChild(shipShadow);
+        stage.addChild(ship);
+
+        function animate() {
+            var leftInput = parseFloat(document.getElementById("left_engine").value);
+            var rightInput = parseFloat(document.getElementById("right_engine").value);
+            left = leftInput / 200;
+            right = rightInput / 200;
+            var forward = left + right;
+            var angular = left - right;
+            angular /= 100;
+            window.requestAnimationFrame( animate );
+
+            ship.position.x += forward * Math.cos(ship.rotation - Math.PI / 2);
+            ship.position.y += forward * Math.sin(ship.rotation - Math.PI / 2);
+            ship.rotation += angular;
+
+            shipShadow.rotation = ship.rotation;
+            shipShadow.position.x = ship.position.x;
+            shipShadow.position.y = ship.position.y + 2;
+            // render the stage   
+            renderer.render(stage);
+        }
+    </script>
+</body>
+</html>
