@@ -1,0 +1,118 @@
+<!doctype html>
+
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+
+    <title>Network Prototype</title>
+    <meta name="description" content="">
+    <meta name="author" content="Kevin Albertson">
+
+    <style type="text/css">
+    </style>
+
+    <!--[if lt IE 9]>
+    <script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+</head>
+
+<body>
+    <div id='game'></div>
+
+    <script src='/js/vendor/underscore.js'></script>
+    <script src='/js/vendor/pixi.js'></script>
+    <script src='/js/vendor/socket.io.js'></script>
+    <script src='/js/config.js'></script>
+    <script src='/js/ClientShip.js'></script>
+    <script src='/js/debugSocket.js'></script>
+
+    <script>
+        Config.setAll({
+            network: 'local',
+            server: 'http://localhost:8888',
+            maxDelta: 500
+        });
+
+        var shipMap = {}
+            , prevTime = Date.now()
+            , shipId = null
+            , socket = null
+            , stage = new PIXI.Container()
+            , renderer = PIXI.autoDetectRenderer(800, 400)
+            ;
+
+        function tick() {
+            window.requestAnimationFrame(tick);
+            var currentTime = Date.now()
+            var delta = currentTime - prevTime;
+            prevTime = currentTime;
+
+            if (delta > Config.get('maxDelta')) {
+                console.log('Max delta detected');
+                return;
+            }
+
+            _.each(shipMap, function(ship) {
+                ship.tick(delta);
+            });
+
+            renderer.render(stage);
+        }
+
+        function onMetaData(message) {
+            if (message.event == 'welcome') {
+                shipId = message.data;
+            }
+        }
+
+        function onShipData(message) {
+            var id = message.dataId,
+                ship = shipMap[id],
+                data = message.data;
+            console.log(message);
+            switch (message.event) {
+                case 'create':
+                    shipMap[id] = new ClientShip(data);
+                    break;
+                case 'update':
+                    ship.setUpdateState(data);
+                    break;
+                case 'refresh':
+                    console.log('getting ship');
+                    if (!ship) shipMap[id] = new ClientShip(data);
+                    else ship.setRefreshState(data);
+                    break;
+            }
+        }
+
+        function requestRefresh() {
+            socket.emit('refresh-request', {});
+        }
+
+        function testShip(left, right) {
+            if (shipId == null) return 'Not playing yet';
+            socket.emit('user-action', {
+                event: 'update',
+                data: {
+                    leftEngine: left,
+                    rightEngine: right
+                }
+            });
+        }
+        
+        function init() {
+            socket = io(Config.get('server'));
+            socket.on('meta', onMetaData);
+            socket.on('ship', onShipData);
+            socket.emit('play', {});
+
+            renderer.backgroundColor = 0x4b84f8;
+            document.getElementById('game').appendChild(renderer.view);
+
+            tick();
+        }
+
+        init();
+    </script>
+</body>
+</html>
