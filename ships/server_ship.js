@@ -24,27 +24,22 @@
         ;
 
         this.applyClientMessage = function(json) {
-            switch(json.type) {
-                case ClientMessage.type.kLeftEngine:
-                    state.leftEngine = json.value;
-                    hasUpdated = true;
-                    updateState.leftEngine = json.value;
-                    break;
-                case ClientMessage.type.kRightEngine:
-                    state.rightEngine = json.value;
-                    hasUpdated = true;
-                    updateState.rightEngine = json.value;
-                    break;
-                default:
-                    console.log(
-                        'Unexpected message passed to ServerShip.applyClientMessage', json);
-                    return;
+            if (json.hasOwnProperty('leftEngine')) {
+                state.leftEngine = json.leftEngine;
+                hasUpdated = true;
+                updateState.leftEngine = json.leftEngine;
+            }
+
+            if (json.hasOwnProperty('rightEngine')) {
+                state.rightEngine = json.rightEngine;
+                hasUpdated = true;
+                updateState.rightEngine = json.rightEngine;
             }
         };
 
         this.sink = function() {
             state.sunk = true;
-            return {id: id, type: ServerMessage.type.kShipUpdate, data: {sunk: true} };
+            return {id: id, type: ServerResponse.type.kShipUpdate, data: {sunk: true} };
         }
 
         this.getState = function(){

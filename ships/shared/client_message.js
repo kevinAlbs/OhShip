@@ -25,6 +25,6 @@
         }
     }
 
-    if (module) module.exports = ClientMessage;
+    if (typeof module !== 'undefined') module.exports = ClientMessage;
     else if (window) window.ClientMessage = ClientMessage;
 }());

@@ -40,7 +40,6 @@
                     let newShip = new ServerShip(json);
                     playerMap.set(id, {
                         ship: null,
-                        state: PlayerState.kJoined,
                         nickname: json.nickname
                     });
                     playersRequestingRefresh.push(id);

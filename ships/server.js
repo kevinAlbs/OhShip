@@ -3,7 +3,7 @@
     let server = require('http').createServer()
       , url = require('url')
       , WebSocketServer = require('ws').Server
-      , wss = new WebSocketServer({ server: server })
+      , wss = new WebSocketServer({ server: server, perMessageDeflate: true })
       , express = require('express')
       , app = express()
       , port = 4080

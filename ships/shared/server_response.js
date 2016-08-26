@@ -9,7 +9,8 @@
             kRefresh : 2,
             kShipCreate: 3,
             kJoin: 4,
-            kError: 5
+            kError: 5,
+            kSpawn: 6
         },
         // Used by the client.
         encode: function (json) {
@@ -22,6 +23,6 @@
         }
     }
 
-    if (module) module.exports = ServerResponse;
+    if (typeof module !== 'undefined') module.exports = ServerResponse;
     else if (window) window.ServerResponse = ServerResponse;
 }());

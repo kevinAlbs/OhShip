@@ -1,7 +1,7 @@
 (function(){
     'use strict';
     let Game = require('./game')
-    , ServerMessage = require('./shared/server_response')
+    , ServerResponse = require('./shared/server_response')
     , ClientMessage = require('./shared/client_message')
     ;
 
@@ -9,10 +9,15 @@
     function Manager(wss) {
         'use strict';
         const kMaxConnections = 65536 // should be high since observers don't add much load.
-        , kFixedDelta = 1000
+        , kFixedDelta = 100
         ;
 
         let _idCounter = 0
+        , counters = {
+            refresh: 0,
+            incoming: 0,
+            outgoing: 0 // excludes refresh messages
+        }
         , clientMap = new Map()
         , game = new Game()
         , bufferedClientMessages = []
@@ -20,7 +25,9 @@
 
         function getStatus() {
             return {
-                numConnections: clientMap.size
+                time: Date().toString(),
+                numConnections: clientMap.size,
+                counters: counters
             };
         }
         
@@ -28,13 +35,19 @@
             console.log("Tick");
             let startTime = Date.now();
             // Apply all user messages to game.
-            bufferedClientMessages.forEach((json) => { game.applyClientMessage(json); });
+            bufferedClientMessages.forEach((json) => { 
+                counters.incoming++;
+                game.applyClientMessage(json);
+            });
             bufferedClientMessages = [];
 
             let serverUpdates = game.tick(kFixedDelta);
 
             // Broadcast pending updates to all sockets.
-            serverUpdates.forEach((json) => { wss.safeBroadcast(json); });
+            serverUpdates.forEach((json) => {
+                counters.outgoing++;
+                wss.safeBroadcast(json);
+            });
 
             // If any players need a refresh, send it here.
             game.forEachPlayerRequestingRefresh((id, refreshJson) => {
@@ -42,6 +55,7 @@
                 if (!clientMap.has(id)) return true;
                 // TODO: check if we're at maximum network bandwidth capacity and defer to later.
                 wss.safeSend(clientMap.get(id), refreshJson);
+                counters.refresh++;
                 return true;
             });
             let endTime = Date.now();
@@ -54,7 +68,7 @@
 
         function _onConnect(ws) {
             if (clientMap.size >= kMaxConnections) {
-                ws.send(ServerMessage.fromError(
+                ws.send(ServerResponse.fromError(
                     'Cannot connect, maximum number of connections reached'));
                 return;
             }
@@ -65,7 +79,7 @@
             ws.on('message', _onMessage);
             ws.on('close', _onClose);
             ws.on('error', _onError);
-            wss.safeSend(ws, {type: ServerMessage.type.kWelcome, id: ws.id});
+            wss.safeSend(ws, {type: ServerResponse.type.kWelcome, id: ws.id});
         }
 
         function _onMessage(message) {
