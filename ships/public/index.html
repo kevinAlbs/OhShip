@@ -2,8 +2,13 @@
 <html lang="en">
 <body>
 	Ships
+    <script src="/shared/client_message.js"></script>
+    <script src="/shared/server_message.js"></script>
     <script>
-      	var ws = new WebSocket('ws://localhost:4080');  
+      	var ws = new WebSocket('ws://localhost:4080');
+        ws.addEventListener('message', function(data) {
+            console.log('Recieved', data);
+        });
     </script>
 </body>
 </html>

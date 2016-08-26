@@ -1,75 +1,98 @@
 (function(){
     'use strict';
     let Game = require('./game')
-    , ServerMessage = require('./server_message')
-    , ClientMessage = require('./client_message')
+    , ServerMessage = require('./shared/server_response')
+    , ClientMessage = require('./shared/client_message')
     ;
 
-    // Responsible for managing websocket connections and gameplay initiation.
+    // Responsible for managing client connections and forwarded decoded messages to/from game.
     function Manager(wss) {
         'use strict';
-        const kMaxConnections = 1000;
+        const kMaxConnections = 65536 // should be high since observers don't add much load.
+        , kFixedDelta = 1000
+        ;
+
         let _idCounter = 0
-        , connectionCount = 0
-        , clientMap = {},
+        , clientMap = new Map()
         , game = new Game()
         , bufferedClientMessages = []
         ;
+
+        function getStatus() {
+            return {
+                numConnections: clientMap.size
+            };
+        }
         
         function _tick() {
+            console.log("Tick");
+            let startTime = Date.now();
             // Apply all user messages to game.
-            bufferedClientMessages.forEach((message) => { game.onClientMessage(message); });
+            bufferedClientMessages.forEach((json) => { game.applyClientMessage(json); });
             bufferedClientMessages = [];
 
-            game.tick(30);
+            let serverUpdates = game.tick(kFixedDelta);
 
             // Broadcast pending updates to all sockets.
-            game.getAndClearUpdates().forEach((message) => { wss.broadcast(message); });
+            serverUpdates.forEach((json) => { wss.safeBroadcast(json); });
 
             // If any players need a refresh, send it here.
-            game.forEachClientRequestingRefresh((id) => {
+            game.forEachPlayerRequestingRefresh((id, refreshJson) => {
                 // If this client has disconnected, then skip it.
-                if (!clientMap[id]) return true;
+                if (!clientMap.has(id)) return true;
                 // TODO: check if we're at maximum network bandwidth capacity and defer to later.
-                clientMap[id].send(game.getRefreshMessage());
+                wss.safeSend(clientMap.get(id), refreshJson);
                 return true;
             });
+            let endTime = Date.now();
+            let diff = endTime - startTime;
+            if (diff > kFixedDelta) {
+                console.error("Frame took " + diff + "ms, max is " + kFixedDelta + "ms");
+            }
+            setTimeout(_tick, Math.max(kFixedDelta - diff, 1));
         }
 
         function _onConnect(ws) {
-            if (connectionCount >= kMaxConnections) {
+            if (clientMap.size >= kMaxConnections) {
                 ws.send(ServerMessage.fromError(
                     'Cannot connect, maximum number of connections reached'));
                 return;
             }
             ws.id = _idCounter++;
-            clientMap[ws.id] = ws;
+            clientMap.set(ws.id, ws);
             console.log('Connection made ' + ws.id);
 
             ws.on('message', _onMessage);
             ws.on('close', _onClose);
             ws.on('error', _onError);
-            ws.send(ServerMessage.fromJSON({type: ServerMessage.type.kWelcome, id: ws.id}));
+            wss.safeSend(ws, {type: ServerMessage.type.kWelcome, id: ws.id});
         }
 
         function _onMessage(message) {
-            bufferedClientMessages.push(ClientMessage.fromData(message));
+            console.log("Recieved", message);
+            let json = ClientMessage.decode(message);
+            // Augment json message with client id.
+            json.id = this.id;
+            bufferedClientMessages.push(json);
         }
 
         function _onClose() {
-            console.log(this.id);
-            console.log('Closing');
-            game.onDisconnect(this.id);
-            delete(clientMap[this.id]);
-            connectionCount--;
+            console.log('Closing', this.id);
+            bufferedClientMessages.push({ type: ClientMessage.type.kLeave, id: this.id });
+            clientMap.delete(this.id);
         }
 
         function _onError() {
             // TODO.
+            console.log("Socket error: TODO");
         }
 
         wss.on('connection', _onConnect);
-        return {};
+        _tick();
+
+        return {
+            getStatus: getStatus
+        };
     };
 
     module.exports = Manager;
