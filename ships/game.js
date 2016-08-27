@@ -21,6 +21,24 @@
                 let shipUpdate = ship.tick(delta);
                 if (shipUpdate) pendingServerUpdates.push(shipUpdate);
             });
+            cannonballs.filter((cannonball) => {
+                cannonball.tick(delta);
+                playerMap.forEach((player, playerId) => {
+                    let ship = player.ship;
+                    if (!ship) return;
+                    let shipState = ship.getState();
+                    let cannonballState = cannonball.getState();
+                    if (cannonball.getPlayerId() == playerId) return;
+                    //console.log('Checking', playerId, shipState, cannonballState);
+                    if (Math.pow(shipState.x - cannonballState.x, 2) + 
+                        Math.pow(shipState.y - cannonballState.y, 2) < Math.pow(45, 2)) {
+                        console.log("Detected collision");
+                        pendingServerUpdates.push(ship.sink());
+                        player.ship = null;
+                    }
+                });
+                return !cannonball.isSunk();
+            });
             let temp = pendingServerUpdates;
             pendingServerUpdates = [];
             return temp;
@@ -63,7 +81,17 @@
                     ship.applyClientMessage(json);
                     break;
                 case ClientMessage.type.kCannonFire:
-                case ClientMessage.type.kCannonMove:
+                    if (!ship) return;
+                    let cannonball = ship.attemptCannonFire();
+                    if (cannonball) {
+                        cannonballs.push(cannonball);    
+                    }
+                    pendingServerUpdates.push({
+                        id: id,
+                        type: ServerResponse.type.kCannonFire
+                        // TODO: include starting coordinates/angle since client may be inexact.
+                    });
+                    break;
                 case ClientMessage.type.kSetNickname:
                 case ClientMessage.type.kRequestRefresh:
                 case ClientMessage.type.kObserve:

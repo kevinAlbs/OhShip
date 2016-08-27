@@ -5,14 +5,13 @@
     let ClientMessage = {
         type: {
             kCannonFire : 0,
-            kCannonMove : 1,
-            kShipUpdate: 3,
-            kSetNickname: 4,
-            kJoin: 5,
-            kRequestRefresh: 6,
-            kObserve: 7,
-            kLeave: 8,
-            kSpawn: 9,
+            kShipUpdate: 1,
+            kSetNickname: 2,
+            kJoin: 3,
+            kRequestRefresh: 4,
+            kObserve: 5,
+            kLeave: 6,
+            kSpawn: 7,
         },
         // Used by the client.
         encode: function (json) {

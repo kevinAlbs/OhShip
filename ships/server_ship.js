@@ -2,15 +2,16 @@
     'use strict';
     let ClientMessage = require('./shared/client_message')
     , ServerResponse = require('./shared/server_response')
+    , ServerCannonball = require('./server_cannonball')
     ;
     let ServerShip = function(id) {
         let state = {
-            x: Math.random() * 300,
-            y: Math.random() * 300,
+            x: Math.random() * 500 + 100,
+            y: Math.random() * 300 + 100,
             leftEngine: 0,
             rightEngine: 0,
-            rotation: 0,
-            cannonRotation: 0,
+            rotation: Math.random() * Math.PI * 2,
+            cannonRotation: Math.random() * Math.PI * 2,
             flagColor: 0x000000,
             sunk: false,
         };
@@ -35,7 +36,23 @@
                 hasUpdated = true;
                 updateState.rightEngine = json.rightEngine;
             }
+
+            if (json.hasOwnProperty('cannonRotation')) {
+                state.cannonRotation = json.cannonRotation;
+                hasUpdated = true;
+                updateState.cannonRotation = json.cannonRotation;
+            }
         };
+
+        this.attemptCannonFire = function() {
+            // TODO: ensure count.
+            console.log("Firing cannon!");
+            return new ServerCannonball({
+                x: state.x,
+                y: state.y,
+                angle: state.cannonRotation
+            }, id);
+        }
 
         this.sink = function() {
             state.sunk = true;

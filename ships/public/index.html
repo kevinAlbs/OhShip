@@ -9,6 +9,11 @@
     <meta name="author" content="Kevin Albertson">
 
     <style type="text/css">
+
+        #container {
+            width: 1000px;
+            margin: 0px auto;
+        }
     </style>
 
     <!--[if lt IE 9]>
@@ -17,13 +22,17 @@
 </head>
 
 <body>
-    <div id='game'></div>
+    <div id="container">
+        <div id='game'></div>
+        <div id='debug-controls'></div>
+    </div>
 
     <script src="/client_message.js"></script>
     <script src="/server_response.js"></script>
     <script src='/js/vendor/underscore.js'></script>
     <script src='/js/vendor/pixi.js'></script>
     <script src='/js/client_ship.js'></script>
+    <script src='/js/client_cannonball.js'></script>
 
     <script>
         // Constants.
@@ -32,9 +41,10 @@
 
         var playerMap = new Map()
             , playerId = null
+            , cannonballs = []
             , ws = new WebSocket('ws://localhost:4080')
             , stage = new PIXI.Container()
-            , renderer = PIXI.autoDetectRenderer(800, 400)
+            , renderer = PIXI.autoDetectRenderer(1000, 600)
             , serverResponseBuffer = []
             ;
 
@@ -49,7 +59,18 @@
 
             // Interpolate.
             playerMap.forEach(function(player) {
-                if (player.ship) player.ship.tick(kFixedDelta);
+                var ship = player.ship;
+                if (ship) {
+                    ship.tick(kFixedDelta);
+                    if (ship.isFinishedSinking()) {
+                        player.ship = null;
+                    }
+                }
+            });
+
+            cannonballs.filter(function(cannonball) {
+                cannonball.tick(kFixedDelta);
+                return !cannonball.isSunk();
             });
 
             renderer.render(stage);
@@ -102,6 +123,11 @@
                     if (!player || !ship) return;
                     ship.applyServerUpdate(json);
                     break;
+                case ServerResponse.type.kCannonFire:
+                    if (!player || !ship) return;
+                    var cannonball = ship.attemptCannonFire();
+                    if (cannonball) cannonballs.push(cannonball);
+                    break;
             }
         }
 
@@ -120,6 +146,10 @@
         renderer.backgroundColor = 0x4b84f8;
         document.getElementById('game').appendChild(renderer.view);
         tick();
+
+
     </script>
+
+    <script src='/js/debug_controls.js'></script>
 </body>
 </html>

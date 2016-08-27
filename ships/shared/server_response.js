@@ -10,7 +10,8 @@
             kShipCreate: 3,
             kJoin: 4,
             kError: 5,
-            kSpawn: 6
+            kSpawn: 6,
+            kCannonFire: 7
         },
         // Used by the client.
         encode: function (json) {
