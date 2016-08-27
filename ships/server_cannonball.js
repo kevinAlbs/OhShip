@@ -11,7 +11,6 @@ function ServerCannonball(startingState, playerId) {
         if (sunk) return;
         state.x += speed * delta * Math.cos(state.angle);
         state.y += speed * delta * Math.sin(state.angle);
-        console.log(state);
         distanceLeft -= speed * delta;
         if (distanceLeft <= 0) sunk = true;
     }

@@ -21,6 +21,10 @@ var ClientShip = function(startingState) {
         return state.sunk && sinkTimer <= 0;
     }
 
+    this.getState = function() {
+        return state;
+    }
+
     // Interpolates current state for one frame.
     this.tick = function(delta) {
         updateStateIfNecessary();

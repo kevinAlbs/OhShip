@@ -32,7 +32,6 @@
         }
         
         function _tick() {
-            console.log("Tick");
             let startTime = Date.now();
             // Apply all user messages to game.
             while (bufferedClientMessages.length > 0) {

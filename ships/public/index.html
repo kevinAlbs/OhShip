@@ -37,6 +37,7 @@
     <script>
         // Constants.
         var kFixedDelta = 60
+            kMaxDelta = 500
             ;
 
         var playerMap = new Map()
@@ -46,12 +47,20 @@
             , stage = new PIXI.Container()
             , renderer = PIXI.autoDetectRenderer(1000, 600)
             , serverResponseBuffer = []
+            , prevTime = 0
             ;
 
         ws.addEventListener('message', onServerResponse);
 
         function tick() {
-            var startTime = Date.now();
+            var currentTime = Date.now();
+            var delta = currentTime - prevTime;
+            prevTime = currentTime;
+            if (delta > kMaxDelta) {
+                window.requestAnimationFrame(tick);
+                return;
+            }
+
             // Apply pending updates from server.
             while(serverResponseBuffer.length > 0) {
                 applyServerResponse(serverResponseBuffer.shift());
@@ -61,7 +70,7 @@
             playerMap.forEach(function(player) {
                 var ship = player.ship;
                 if (ship) {
-                    ship.tick(kFixedDelta);
+                    ship.tick(delta);
                     if (ship.isFinishedSinking()) {
                         player.ship = null;
                     }
@@ -69,17 +78,12 @@
             });
 
             cannonballs.filter(function(cannonball) {
-                cannonball.tick(kFixedDelta);
+                cannonball.tick(delta);
                 return !cannonball.isSunk();
             });
 
             renderer.render(stage);
-            var endTime = Date.now();
-            var diff = endTime - startTime;
-            if (diff > kFixedDelta) {
-                console.log('Frame too long');
-            }
-            setTimeout(tick, Math.max(kFixedDelta - diff, 1));
+            window.requestAnimationFrame(tick);
         }
         
         function onServerResponse(raw) {
