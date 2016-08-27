@@ -35,11 +35,10 @@
             console.log("Tick");
             let startTime = Date.now();
             // Apply all user messages to game.
-            bufferedClientMessages.forEach((json) => { 
+            while (bufferedClientMessages.length > 0) {
                 counters.incoming++;
-                game.applyClientMessage(json);
-            });
-            bufferedClientMessages = [];
+                game.applyClientMessage(bufferedClientMessages.shift());
+            }
 
             let serverUpdates = game.tick(kFixedDelta);
 

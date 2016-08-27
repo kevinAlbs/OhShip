@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en">
+<body>
+	Ships
+    <script src="/client_message.js"></script>
+    <script src="/server_response.js"></script>
+    <script>
+      	var ws = new WebSocket('ws://localhost:4080');
+        function sendJson(json) {
+            ws.send(ClientMessage.encode(json));
+        }
+
+        function join(nickname) {
+            sendJson({
+                type: ClientMessage.type.kJoin,
+                nickname: nickname
+            });
+        }
+        
+        ws.addEventListener('message', function(raw) {
+            let json = ServerResponse.decode(raw.data);
+            console.log('Recieved from server', json);
+        });
+    </script>
+</body>
+</html>

@@ -1,26 +1,125 @@
 <!doctype html>
+
 <html lang="en">
+<head>
+    <meta charset="utf-8">
+
+    <title>Ships</title>
+    <meta name="description" content="">
+    <meta name="author" content="Kevin Albertson">
+
+    <style type="text/css">
+    </style>
+
+    <!--[if lt IE 9]>
+    <script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+</head>
+
 <body>
-	Ships
+    <div id='game'></div>
+
     <script src="/client_message.js"></script>
     <script src="/server_response.js"></script>
+    <script src='/js/vendor/underscore.js'></script>
+    <script src='/js/vendor/pixi.js'></script>
+    <script src='/js/client_ship.js'></script>
+
     <script>
-      	var ws = new WebSocket('ws://localhost:4080');
+        // Constants.
+        var kFixedDelta = 60
+            ;
+
+        var playerMap = new Map()
+            , playerId = null
+            , ws = new WebSocket('ws://localhost:4080')
+            , stage = new PIXI.Container()
+            , renderer = PIXI.autoDetectRenderer(800, 400)
+            , serverResponseBuffer = []
+            ;
+
+        ws.addEventListener('message', onServerResponse);
+
+        function tick() {
+            var startTime = Date.now();
+            // Apply pending updates from server.
+            while(serverResponseBuffer.length > 0) {
+                applyServerResponse(serverResponseBuffer.shift());
+            }
+
+            // Interpolate.
+            playerMap.forEach(function(player) {
+                if (player.ship) player.ship.tick(kFixedDelta);
+            });
+
+            renderer.render(stage);
+            var endTime = Date.now();
+            var diff = endTime - startTime;
+            if (diff > kFixedDelta) {
+                console.log('Frame too long');
+            }
+            setTimeout(tick, Math.max(kFixedDelta - diff, 1));
+        }
+        
+        function onServerResponse(raw) {
+            let json = ServerResponse.decode(raw.data);
+            console.log('Recieved from server', json);
+            serverResponseBuffer.push(json);
+        }
+
+        // Called at the beginning of the frame.
+        function applyServerResponse(json) {
+            console.log('Applying', json);
+            let id = json.id;
+            let player = playerMap.has(id) ? playerMap.get(id) : null;
+            let ship = player ? player.ship : null;
+            switch (json.type) {
+                case ServerResponse.type.kWelcome:
+                    play(id);
+                    break;
+                case ServerResponse.type.kSpawn:
+                    if (!player) return;
+                    player.ship = new ClientShip(json.data);
+                    break;
+                case ServerResponse.type.kJoin:
+                    if (player) return;
+                    playerMap.set(id, json);
+                    break;
+                case ServerResponse.type.kRefresh:
+                    // TODO: clear all ships first?
+                    json.data.forEach(function(playerData) {
+                        if (playerMap.has(playerData.id)) return;
+                        let player = {
+                            id: playerData.id
+                        };
+                        if (playerData.hasOwnProperty('ship')) {
+                            player.ship = new ClientShip(playerData.ship);
+                        }
+                        playerMap.set(playerData.id, player);
+                    });
+                    break;
+                case ServerResponse.type.kShipUpdate:
+                    if (!player || !ship) return;
+                    ship.applyServerUpdate(json);
+                    break;
+            }
+        }
+
         function sendJson(json) {
             ws.send(ClientMessage.encode(json));
         }
-
-        function join(nickname) {
+        
+        function play(id) {
+            playerId = id;
             sendJson({
                 type: ClientMessage.type.kJoin,
-                nickname: nickname
+                nickname: "kevin" + playerId
             });
         }
-        
-        ws.addEventListener('message', function(raw) {
-            let json = ServerResponse.decode(raw.data);
-            console.log('Recieved from server', json);
-        });
+
+        renderer.backgroundColor = 0x4b84f8;
+        document.getElementById('game').appendChild(renderer.view);
+        tick();
     </script>
 </body>
 </html>

@@ -65,7 +65,6 @@
                 case ClientMessage.type.kCannonFire:
                 case ClientMessage.type.kCannonMove:
                 case ClientMessage.type.kSetNickname:
-                case ClientMessage.type.kJoin:
                 case ClientMessage.type.kRequestRefresh:
                 case ClientMessage.type.kObserve:
                     // TODO.
