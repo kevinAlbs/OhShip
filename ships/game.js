@@ -49,7 +49,7 @@
             let id = json.id;
             let player = playerMap.has(id) ? playerMap.get(id) : null;
             let ship = player ? player.ship : null;
-            console.log("Game.onClientMessage", id, json);
+            //console.log("Game.onClientMessage", id, json);
             switch (json.type) {
                 case ClientMessage.type.kJoin:
                     // TODO: check that nickname is available.

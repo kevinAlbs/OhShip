@@ -1,6 +1,7 @@
 (function(){
     'use strict';
     let Game = require('./game')
+    , Stats = require('./stats')
     , ServerResponse = require('./shared/server_response')
     , ClientMessage = require('./shared/client_message')
     ;
@@ -13,11 +14,6 @@
         ;
 
         let _idCounter = 0
-        , counters = {
-            refresh: 0,
-            incoming: 0,
-            outgoing: 0 // excludes refresh messages
-        }
         , clientMap = new Map()
         , game = new Game()
         , bufferedClientMessages = []
@@ -27,7 +23,7 @@
             return {
                 time: Date().toString(),
                 numConnections: clientMap.size,
-                counters: counters
+                stats: Stats.getJson()
             };
         }
         
@@ -35,7 +31,7 @@
             let startTime = Date.now();
             // Apply all user messages to game.
             while (bufferedClientMessages.length > 0) {
-                counters.incoming++;
+                Stats.inc("incoming");
                 game.applyClientMessage(bufferedClientMessages.shift());
             }
 
@@ -43,7 +39,7 @@
 
             // Broadcast pending updates to all sockets.
             serverUpdates.forEach((json) => {
-                counters.outgoing++;
+                Stats.inc("outgoing");
                 wss.safeBroadcast(json);
             });
 
@@ -53,14 +49,18 @@
                 if (!clientMap.has(id)) return true;
                 // TODO: check if we're at maximum network bandwidth capacity and defer to later.
                 wss.safeSend(clientMap.get(id), refreshJson);
-                counters.refresh++;
+                Stats.inc("refresh");
                 return true;
             });
             let endTime = Date.now();
             let diff = endTime - startTime;
             if (diff > kFixedDelta) {
                 console.error("Frame took " + diff + "ms, max is " + kFixedDelta + "ms");
+                Stats.inc("framesExceeded");
             }
+            Stats.tick(Math.max(kFixedDelta, diff));
+            Stats.inc("numFrames");
+            Stats.push("frameTime", diff);
             setTimeout(_tick, Math.max(kFixedDelta - diff, 1));
         }
 
@@ -81,7 +81,7 @@
         }
 
         function _onMessage(message) {
-            console.log("Recieved", message);
+            //console.log("Recieved", message);
             let json = ClientMessage.decode(message);
             // Augment json message with client id.
             json.id = this.id;
