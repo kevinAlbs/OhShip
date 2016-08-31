@@ -90,7 +90,7 @@
         }
 
         function _onMessage(message) {
-            console.log("Recieved", message);
+            //console.log("Recieved", message);
             let json = ClientMessage.decode(message);
             // Augment json message with client id.
             json.id = this.id;
