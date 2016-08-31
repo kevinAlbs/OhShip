@@ -82,6 +82,13 @@
                 return !cannonball.isSunk();
             });
 
+            // Center stage if we have a ship.
+            var myPlayer = playerMap.get(playerId);
+            var myShip = myPlayer ? myPlayer.ship : null;
+            if (myShip) {
+                var state = myShip.getState();
+                stage.position.set(renderer.width / 2 - state.x , renderer.height / 2 - state.y);
+            }
             renderer.render(stage);
             window.requestAnimationFrame(tick);
         }
@@ -131,6 +138,11 @@
                     if (!player || !ship) return;
                     var cannonball = ship.attemptCannonFire();
                     if (cannonball) cannonballs.push(cannonball);
+                    break;
+                case ServerResponse.type.kBufferedUpdates:
+                    json.data.forEach(function(message){
+                        applyServerResponse(message);
+                    });
                     break;
             }
         }

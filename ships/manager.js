@@ -26,6 +26,11 @@
                 stats: Stats.getJson()
             };
         }
+
+        function start() {
+            wss.on('connection', _onConnect);
+            _tick();
+        }
         
         function _tick() {
             let startTime = Date.now();
@@ -36,12 +41,16 @@
             }
 
             let serverUpdates = game.tick(kFixedDelta);
+            if (serverUpdates.length > 0) {
+                // Broadcast pending updates to all sockets.
+                wss.safeBroadcast({
+                    type: ServerResponse.type.kBufferedUpdates,
+                    data: serverUpdates
+                });
 
-            // Broadcast pending updates to all sockets.
-            serverUpdates.forEach((json) => {
                 Stats.inc("outgoing");
-                wss.safeBroadcast(json);
-            });
+                Stats.inc("server_updates", serverUpdates.length);
+            }
 
             // If any players need a refresh, send it here.
             game.forEachPlayerRequestingRefresh((id, refreshJson) => {
@@ -59,8 +68,8 @@
                 Stats.inc("framesExceeded");
             }
             Stats.tick(Math.max(kFixedDelta, diff));
-            Stats.inc("numFrames");
             Stats.push("frameTime", diff);
+            Stats.push("numFrames", diff);
             setTimeout(_tick, Math.max(kFixedDelta - diff, 1));
         }
 
@@ -81,7 +90,7 @@
         }
 
         function _onMessage(message) {
-            //console.log("Recieved", message);
+            console.log("Recieved", message);
             let json = ClientMessage.decode(message);
             // Augment json message with client id.
             json.id = this.id;
@@ -99,11 +108,9 @@
             console.log("Socket error: TODO");
         }
 
-        wss.on('connection', _onConnect);
-        _tick();
-
         return {
-            getStatus: getStatus
+            getStatus: getStatus,
+            start: start
         };
     };
 

@@ -11,7 +11,8 @@
             kJoin: 4,
             kError: 5,
             kSpawn: 6,
-            kCannonFire: 7
+            kCannonFire: 7,
+            kBufferedUpdates: 8
         },
         // Used by the client.
         encode: function (json) {

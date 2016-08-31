@@ -4,6 +4,7 @@
         let counters = new Map()
         , counterTotals = new Map()
         , accumulators = new Map() // takes running average
+        , nFrames = 0
         , timer = 0
         ;
         function _clear() {
@@ -33,6 +34,7 @@
 
         function tick(delta) {
             timer += delta;
+            nFrames++;
         }
 
         // TODO: current assumption is that only one client will use status since this clears.
@@ -41,7 +43,8 @@
                 counters: {},
                 counterTotals: {},
                 accumulators: {},
-                delta: timer
+                delta: timer,
+                nFrames: nFrames
             };
 
             counters.forEach((value, key) => {
@@ -54,7 +57,7 @@
 
             accumulators.forEach((value, key) => {
                 let sum = accumulators.get(key).reduce((a, b) => {return a + b});
-                json["accumulators"][key] = sum / timer;
+                json["accumulators"][key] = sum / nFrames;
             });
 
             _clear()

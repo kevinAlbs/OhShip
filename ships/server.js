@@ -41,7 +41,7 @@
 
     server.on('request', app);
     server.listen(port, function () { console.log('Listening on ' + server.address().port) });
-
+    manager.start();
     // TODO Update Node, then repl may work.
     // repl = require("repl")
     // r = repl.start("node> ")
