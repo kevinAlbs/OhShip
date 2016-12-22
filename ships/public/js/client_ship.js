@@ -25,6 +25,18 @@ var ClientShip = function(startingState) {
         return state;
     }
 
+    // Update the ship mask and add particles.
+    this.handleCollision = function(x, y) {
+        // x and y are given from global coordinates.
+        var globalPoint = new PIXI.Point(x,y);
+        var localPoint = shipSprite.toLocal(globalPoint);
+        console.log(localPoint);
+        destructionMaskGraphic.beginFill(0x000000);
+        destructionMaskGraphic.drawCircle(localPoint.x + hw, localPoint.y + hh, 10);
+        destructionMaskGraphic.endFill();
+        applyDestructionMask();
+    }
+
     // Interpolates current state for one frame.
     this.tick = function(delta) {
         updateStateIfNecessary();
@@ -73,6 +85,17 @@ var ClientShip = function(startingState) {
         console.log(state);
         updateState = null;
     }
+
+    function applyDestructionMask() {
+        // For whatever reason, generateCanvasTexture only uses positive coordinates, so translate.
+        // TODO: Is this a bug or misunderstanding?
+        if (maskSprite) shipSprite.removeChild(maskSprite);
+        maskSprite = PIXI.Sprite.from(destructionMaskGraphic.generateCanvasTexture())
+        maskSprite.position.x = -hw;
+        maskSprite.position.y = -hh;
+        shipSprite.addChild(maskSprite);
+        shipSprite.mask = maskSprite;
+    }
     
     // Add to rendering.
     var state = {
@@ -94,17 +117,34 @@ var ClientShip = function(startingState) {
     var sinkTimer = 0;
 
     // Add all sprites for this ship.
-    var shipTexture = PIXI.Texture.fromImage('/img/ship-placeholder.png'); // TODO cache textures.
-    var shipSprite = new PIXI.Sprite(shipTexture);
+    var shipSprite = new PIXI.Sprite(PIXI.loader.resources.ship.texture);
     shipSprite.anchor.set(.5, .5);
 
     shipSprite.position.x = state.x;
     shipSprite.position.y = state.y;
     shipSprite.rotation = state.rotation;
 
-    var cannonSprite = new PIXI.Sprite(PIXI.Texture.fromImage('/img/cannon.png'));
+    var cannonSprite = new PIXI.Sprite(PIXI.loader.resources.cannon.texture);
     cannonSprite.anchor.set(.3, .5);
     cannonSprite.rotation = state.cannonRotation;
     stage.addChild(shipSprite);
-    stage.addChild(cannonSprite);
+    //stage.addChild(cannonSprite);
+
+    // Add the destruction mask, which will be temporarily stored as a graphic for easy updating
+    // but needs to be converted to a sprite for application, which needs to be updated on change.
+
+    var w = shipSprite.width
+        , h = shipSprite.height
+        , hw = shipSprite.width / 2 // half width
+        , hh = shipSprite.height / 2 // half height
+        ;
+
+    var maskSprite = null; // Initially null until a destruction mask is applied.
+
+    var destructionMaskGraphic = new PIXI.Graphics();
+    // Start with complete white to show entire ship.
+    destructionMaskGraphic.beginFill(0xFFFFFF);
+    destructionMaskGraphic.drawRect(0, 0, w, h);
+    destructionMaskGraphic.endFill();
+    // Do not apply the mask yet as it is unnecessary until some destruction occurs.
 };

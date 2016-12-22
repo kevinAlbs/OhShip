@@ -1,0 +1,101 @@
+<!doctype html>
+
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+
+    <title>Ships</title>
+    <meta name="description" content="">
+    <meta name="author" content="Kevin Albertson">
+
+    <style type="text/css">
+
+        #container {
+            width: 1000px;
+            margin: 0px auto;
+            border: 1px black solid;
+        }
+    </style>
+
+    <!--[if lt IE 9]>
+    <script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+</head>
+
+<body>
+    <div id="container">
+        <div id='game'></div>
+    </div>
+
+    <script src='/js/vendor/underscore.js'></script>
+    <script src='/js/vendor/pixi.js'></script>
+    <script src='/js/client_ship.js'></script>
+    <script src='/js/client_cannonball.js'></script>
+
+    <script>
+        // Constants.
+        var kFixedDelta = 60
+            kMaxDelta = 500
+            ;
+
+        var playerMap = new Map()
+            , playerId = 0
+            , stage = new PIXI.Container()
+            , renderer = PIXI.autoDetectRenderer(1000, 600)
+            , prevTime = 0
+            ;
+
+        
+        function tick() {
+            var currentTime = Date.now();
+            var delta = currentTime - prevTime;
+            prevTime = currentTime;
+            if (delta > kMaxDelta) {
+                window.requestAnimationFrame(tick);
+                return;
+            }
+
+
+            // Interpolate.
+            playerMap.forEach(function(player) {
+                var ship = player.ship;
+                if (ship) {
+                    ship.tick(delta);
+                    if (ship.isFinishedSinking()) {
+                        player.ship = null;
+                    }
+                }
+            });
+
+            // Center stage if we have a ship.
+            var myPlayer = playerMap.get(playerId);
+            var myShip = myPlayer ? myPlayer.ship : null;
+            if (myShip) {
+                var state = myShip.getState();
+                stage.position.set(renderer.width / 2 - state.x , renderer.height / 2 - state.y);
+            }
+            renderer.render(stage);
+            window.requestAnimationFrame(tick);
+        }
+        
+
+
+        PIXI.loader.add("ship", "img/ship.png").add("cannonball", "img/cannonball.png").add("cannon", "img/cannon.png").load();
+        PIXI.loader.once("complete", function() {
+            playerMap.set(playerId, {ship: new ClientShip({x: 100, y: 100, rotation: .1})});
+            var myShip = playerMap.get(playerId).ship;
+
+            var container = document.getElementById("game");
+            container.addEventListener("click", function(e) {
+                myShip.handleCollision(e.offsetX, e.offsetY);
+            })
+
+            renderer.backgroundColor = 0xFFF000;
+            document.getElementById('game').appendChild(renderer.view);
+            tick();
+        });
+
+    </script>
+
+</body>
+</html>
