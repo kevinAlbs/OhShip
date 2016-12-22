@@ -148,3 +148,32 @@ var ClientShip = function(startingState) {
     destructionMaskGraphic.endFill();
     // Do not apply the mask yet as it is unnecessary until some destruction occurs.
 };
+
+ClientShip.getParticleField = function() {
+    // var cnv = document.createElement("canvas");
+    // cnv.width = 181;
+    // cnv.height = 91;
+    // cnv.getContext("2d");
+    var shipSprite = new PIXI.Sprite(PIXI.loader.resources.ship.texture);
+    var renderer = new PIXI.CanvasRenderer(181, 91);
+    renderer.backgroundColor = 0xFFFFFF;
+    renderer.render(shipSprite);
+    document.body.appendChild(renderer.view);
+    var imageData = renderer.view.getContext("2d").getImageData(0,0,181,91);
+    var s = "";
+    console.log(imageData);
+    for (var i = 0; i < imageData.height; i++) {
+        for (var j = 0; j < imageData.width; j++) {
+            // Check if ship pixel
+            if (imageData.data[i*imageData.width*4 + j*4] < 255) s += "+";
+            else s += "O";
+        }
+        s += "\n";
+    }
+    console.log(s);
+    // var renderTex = PIXI.RenderTexture.create(181, 91);
+    // console.log(renderTex);
+    // renderer.render(shipSprite, renderTex);
+    // var dataExtractor = new PIXI.extract.canvas(renderTex);
+    // console.log(dataExtractor.pixels());
+}
