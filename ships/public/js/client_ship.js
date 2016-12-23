@@ -36,31 +36,30 @@ var ClientShip = function(startingState) {
         destructionMaskGraphic.endFill();
         applyDestructionMask();
 
-        // Use the particle field to generated necessary particles.
         // TODO
         // Get bounding box.
         var boxX = globalPoint.x - 5, boxY = globalPoint.y - 5, boxW = 10, boxH = 10;
+
+        // Use the particle field to generated necessary particles.
+        if (!particleField) particleField = ClientShip.getParticleField();
         var particleContainer = new PIXI.particles.ParticleContainer();
         particleContainer.x = boxX;
         particleContainer.y = boxY;
-        console.log(particleContainer.x, particleContainer.y);
         particleContainer.rotation = shipSprite.rotation;
-        var pixel = new PIXI.Graphics();
-        pixel.beginFill(0x000000);
-        pixel.drawRect(0,0,1,1);
-        pixel.endFill();
-        var pixelTex = pixel.generateCanvasTexture();
-        
-
         for (var i = 0; i < boxH; i++) {
             for (var j = 0; j < boxW; j++) {
-                var pixelSprite = PIXI.Sprite.from(pixelTex);
-                pixelSprite.x = j;
-                pixelSprite.y = i;
-                particleContainer.addChild(pixelSprite);
+                var px = Math.floor(localPoint.x - boxW / 2 + j + hw);
+                var py = Math.floor(localPoint.y - boxH / 2 + i + hh);
+                console.log(py, px);
+                if (px < 0 || py < 0 || py > particleField.length - 1 || px > particleField[0].length - 1) continue;
+                if (particleField[py][px]) {
+                    // Emit.
+                    particleField[py][px] = 0;
+                    ClientShip.particleEmitter.emitRect(particleContainer, j, i, 1, 1, {xStep: 2, yStep: 2, explode: true});
+                }
             }
         }
-        stage.addChild(particleContainer);
+        stage.addChild(particleContainer); // TODO: remove particle container after emission.
     }
 
     // Interpolates current state for one frame.
@@ -166,6 +165,7 @@ var ClientShip = function(startingState) {
         ;
 
     var maskSprite = null; // Initially null until a destruction mask is applied.
+    var particleField = null; // Initially null until needed.
 
     var destructionMaskGraphic = new PIXI.Graphics();
     // Start with complete white to show entire ship.
@@ -181,7 +181,7 @@ var ClientShip = function(startingState) {
     pixel.endFill();
     ClientShip.particleEmitter = new ParticleEmitter(pixel.generateCanvasTexture());
     ClientShip.particleEmitter.create(1000, {});
-    
+
 };
 
 ClientShip.getParticleField = function() {
@@ -194,29 +194,29 @@ ClientShip.getParticleField = function() {
         // http://pixijs.download/release/docs/PIXI.CanvasExtract.html
         // TODO: See if CanvasExtract can be used for cleanliness.
 
-
+        ClientShip._kParticleFieldTemplate = [];
         var shipSprite = new PIXI.Sprite(PIXI.loader.resources.ship.texture);
         var renderer = new PIXI.CanvasRenderer(181, 91);
         renderer.backgroundColor = 0xFFFFFF;
         renderer.render(shipSprite);
         document.body.appendChild(renderer.view);
         var imageData = renderer.view.getContext("2d").getImageData(0,0,181,91);
-        var s = "";
-        console.log(imageData);
+        var s = [];
         for (var i = 0; i < imageData.height; i++) {
             for (var j = 0; j < imageData.width; j++) {
                 // Check if ship pixel
-                if (imageData.data[i*imageData.width*4 + j*4] < 255) s += "+";
-                else s += "O";
+                if (imageData.data[i*imageData.width*4 + j*4] < 255) s.push(1);
+                else s.push(0);
             }
-            s += "\n";
+            ClientShip._kParticleFieldTemplate.push(s);
+            s = [];
         }
-        console.log(s);
         // var renderTex = PIXI.RenderTexture.create(181, 91);
         // console.log(renderTex);
         // renderer.render(shipSprite, renderTex);
         // var dataExtractor = new PIXI.extract.canvas(renderTex);
         // console.log(dataExtractor.pixels());
     }
-    // Make a copy of the field.
+    // Make a copy of the field. TODO: is this deep?
+    return ClientShip._kParticleFieldTemplate;
 }

@@ -41,11 +41,9 @@ var ParticleEmitter = function(texture) {
                     // Velocity is function of manhattan distance with some randomness.
                     var centerI = height / 2;
                     var centerJ = width / 2;
-                    // TODO: Sqrt is probably too expensive.
-                    particle.yVel = Math.sign(i - centerI) * Math.sqrt(Math.abs(i - centerI)) * .01 + ((Math.random() - .5) / 10);
-                    particle.xVel = Math.sign(j - centerJ) * Math.sqrt(Math.abs(j - centerJ)) * .01 + ((Math.random() - .5) / 10);
+                    particle.yVel = ((Math.random() - .5) / 500);
+                    particle.xVel = ((Math.random() - .5) / 500);
                     particle.lifetime = 1000 + (Math.random() - .5) * 1000;
-                    console.log(i, j, particle.xVel, particle.yVel);
                 } else {
                     particle.xVel = options.xVel || 0;
                     particle.yVel = options.yVel || 0;
