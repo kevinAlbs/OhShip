@@ -31,6 +31,7 @@
     <script src='/js/vendor/pixi.js'></script>
     <script src='/js/client_ship.js'></script>
     <script src='/js/client_cannonball.js'></script>
+    <script src='/js/particle_emitter.js'></script>
 
     <script>
         // Constants.
@@ -48,7 +49,7 @@
         
         function tick() {
             var currentTime = Date.now();
-            var delta = currentTime - prevTime;
+            var delta = currentTime - prevTime; // TODO: convert to seconds because it's easier to think about velocities in pixels/sec.
             prevTime = currentTime;
             if (delta > kMaxDelta) {
                 window.requestAnimationFrame(tick);
@@ -67,13 +68,10 @@
                 }
             });
 
-            // Center stage if we have a ship.
-            var myPlayer = playerMap.get(playerId);
-            var myShip = myPlayer ? myPlayer.ship : null;
-            if (myShip) {
-                var state = myShip.getState();
-                stage.position.set(renderer.width / 2 - state.x , renderer.height / 2 - state.y);
+            if (ClientShip.particleEmitter) {
+                ClientShip.particleEmitter.tick(delta);
             }
+
             renderer.render(stage);
             window.requestAnimationFrame(tick);
         }

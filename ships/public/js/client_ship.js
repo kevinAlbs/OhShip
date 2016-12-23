@@ -32,9 +32,35 @@ var ClientShip = function(startingState) {
         var localPoint = shipSprite.toLocal(globalPoint);
         console.log(localPoint);
         destructionMaskGraphic.beginFill(0x000000);
-        destructionMaskGraphic.drawCircle(localPoint.x + hw, localPoint.y + hh, 10);
+        destructionMaskGraphic.drawCircle(localPoint.x + hw, localPoint.y + hh, 5);
         destructionMaskGraphic.endFill();
         applyDestructionMask();
+
+        // Use the particle field to generated necessary particles.
+        // TODO
+        // Get bounding box.
+        var boxX = globalPoint.x - 5, boxY = globalPoint.y - 5, boxW = 10, boxH = 10;
+        var particleContainer = new PIXI.particles.ParticleContainer();
+        particleContainer.x = boxX;
+        particleContainer.y = boxY;
+        console.log(particleContainer.x, particleContainer.y);
+        particleContainer.rotation = shipSprite.rotation;
+        var pixel = new PIXI.Graphics();
+        pixel.beginFill(0x000000);
+        pixel.drawRect(0,0,1,1);
+        pixel.endFill();
+        var pixelTex = pixel.generateCanvasTexture();
+        
+
+        for (var i = 0; i < boxH; i++) {
+            for (var j = 0; j < boxW; j++) {
+                var pixelSprite = PIXI.Sprite.from(pixelTex);
+                pixelSprite.x = j;
+                pixelSprite.y = i;
+                particleContainer.addChild(pixelSprite);
+            }
+        }
+        stage.addChild(particleContainer);
     }
 
     // Interpolates current state for one frame.
@@ -147,33 +173,50 @@ var ClientShip = function(startingState) {
     destructionMaskGraphic.drawRect(0, 0, w, h);
     destructionMaskGraphic.endFill();
     // Do not apply the mask yet as it is unnecessary until some destruction occurs.
+
+    // Create a ship shared particle pool.
+    var pixel = new PIXI.Graphics();
+    pixel.beginFill(0x000000);
+    pixel.drawRect(0,0,2,2);
+    pixel.endFill();
+    ClientShip.particleEmitter = new ParticleEmitter(pixel.generateCanvasTexture());
+    ClientShip.particleEmitter.create(1000, {});
+    
 };
 
 ClientShip.getParticleField = function() {
-    // var cnv = document.createElement("canvas");
-    // cnv.width = 181;
-    // cnv.height = 91;
-    // cnv.getContext("2d");
-    var shipSprite = new PIXI.Sprite(PIXI.loader.resources.ship.texture);
-    var renderer = new PIXI.CanvasRenderer(181, 91);
-    renderer.backgroundColor = 0xFFFFFF;
-    renderer.render(shipSprite);
-    document.body.appendChild(renderer.view);
-    var imageData = renderer.view.getContext("2d").getImageData(0,0,181,91);
-    var s = "";
-    console.log(imageData);
-    for (var i = 0; i < imageData.height; i++) {
-        for (var j = 0; j < imageData.width; j++) {
-            // Check if ship pixel
-            if (imageData.data[i*imageData.width*4 + j*4] < 255) s += "+";
-            else s += "O";
+    // Initialize a static template upon first use.
+    if (!ClientShip._kParticleFieldTemplate) {
+        // There has got to be a better way in PIXI to get image data from a rendered texture.
+        // This post asks the same question
+        // http://www.html5gamedevs.com/topic/7074-get-pixeldata-in-a-webgl-canvas/
+        // There seems to be a CanvasExtract class for just this, but did not have any luck:
+        // http://pixijs.download/release/docs/PIXI.CanvasExtract.html
+        // TODO: See if CanvasExtract can be used for cleanliness.
+
+
+        var shipSprite = new PIXI.Sprite(PIXI.loader.resources.ship.texture);
+        var renderer = new PIXI.CanvasRenderer(181, 91);
+        renderer.backgroundColor = 0xFFFFFF;
+        renderer.render(shipSprite);
+        document.body.appendChild(renderer.view);
+        var imageData = renderer.view.getContext("2d").getImageData(0,0,181,91);
+        var s = "";
+        console.log(imageData);
+        for (var i = 0; i < imageData.height; i++) {
+            for (var j = 0; j < imageData.width; j++) {
+                // Check if ship pixel
+                if (imageData.data[i*imageData.width*4 + j*4] < 255) s += "+";
+                else s += "O";
+            }
+            s += "\n";
         }
-        s += "\n";
+        console.log(s);
+        // var renderTex = PIXI.RenderTexture.create(181, 91);
+        // console.log(renderTex);
+        // renderer.render(shipSprite, renderTex);
+        // var dataExtractor = new PIXI.extract.canvas(renderTex);
+        // console.log(dataExtractor.pixels());
     }
-    console.log(s);
-    // var renderTex = PIXI.RenderTexture.create(181, 91);
-    // console.log(renderTex);
-    // renderer.render(shipSprite, renderTex);
-    // var dataExtractor = new PIXI.extract.canvas(renderTex);
-    // console.log(dataExtractor.pixels());
+    // Make a copy of the field.
 }
