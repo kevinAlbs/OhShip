@@ -81,11 +81,11 @@
 
         PIXI.loader.add("ship", "img/ship.png").add("cannonball", "img/cannonball.png").add("cannon", "img/cannon.png").load();
         PIXI.loader.once("complete", function() {
-            playerMap.set(playerId, {ship: new ClientShip({x: 100, y: 100, rotation: 0})});
+            playerMap.set(playerId, {ship: new ClientShip({x: 100, y: 100, rotation: .3})});
             var myShip = playerMap.get(playerId).ship;
 
             var container = document.getElementById("game");
-            container.addEventListener("click", function(e) {
+            container.addEventListener("mousemove", function(e) {
                 myShip.handleCollision(e.offsetX, e.offsetY);
             })
 

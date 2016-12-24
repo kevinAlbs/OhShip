@@ -16,8 +16,31 @@ var ParticleEmitter = function(texture) {
         }
     };
 
-    this.emit = function(container, amount, point, options) {
-        // Grab from free particles. TODO
+    this.emit = function(container, x, y, options) {
+        // Grab from free particles.
+        var freeLeft = freeParticles.length > 0;
+        var particle = freeLeft ? freeParticles[0] : useParticles[0];
+        if (freeLeft) {
+            useParticles.push(freeParticles.shift());
+            freeLeft = freeParticles.length > 0;
+        } else {
+            // Move recently used particle to back of useParticles.
+            useParticles.push(useParticles.shift());
+        }
+        particle.sprite.position.set(x, y);
+        if (options.explode) {
+            particle.xVel = (Math.random() - .5) * .035;
+            particle.yVel = (Math.random() - .5) * .035;
+        } else {
+            particle.xVel = options.xVel || 0;
+            particle.yVel = options.yVel || 0;    
+        }
+        
+        particle.lifetime = options.lifetime || (500 + Math.random() * 1000);
+        
+        // Based on src, setParent just adds to container, which will move the child if
+        // it is already added to another container.
+        particle.sprite.setParent(container);
     };
 
     this.emitRect = function(container, x, y, width, height, options) {

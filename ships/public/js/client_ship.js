@@ -28,8 +28,9 @@ var ClientShip = function(startingState) {
     // Check if particle field has a 1 for this position, and set to 0 if it does.
     // Returns true if a 1 was there.
     this.checkAndSetParticleField = function(localX, localY) {
+        if (!particleField) particleField = ClientShip.getParticleField();
         // Scale down and round.
-        var x = Math.floor(localX / 2), y = Math.floor(localY / 2);
+        var x = Math.floor((localX + hw) / 2), y = Math.floor((localY + hh) / 2);
         if (x < 0 || y < 0 || x > 31 || y > particleField.length - 1) return false;
         var bitPos = (1 << (32 - 1 - x));
         var val = (particleField[y] & bitPos) != 0 ? 1 : 0;
@@ -49,28 +50,37 @@ var ClientShip = function(startingState) {
         destructionMaskGraphic.endFill();
         applyDestructionMask();
 
-        // TODO
         // Get bounding box.
-        var boxX = globalPoint.x - 5, boxY = globalPoint.y - 5, boxW = 10, boxH = 10;
+        var boxW = 10, boxH = 10;
 
         // Use the particle field to generated necessary particles.
-        if (!particleField) particleField = ClientShip.getParticleField();
         var particleContainer = new PIXI.particles.ParticleContainer();
-        particleContainer.x = boxX;
-        particleContainer.y = boxY;
+        // Particle container will be centered at location of impact.
+        particleContainer.x = globalPoint.x;
+        particleContainer.y = globalPoint.y;
+        particleContainer.pivot.set(.5, .5);
         particleContainer.rotation = shipSprite.rotation;
         for (var i = 0; i < boxH; i += 2) {
             for (var j = 0; j < boxW; j += 2) {
-                var localX = localPoint.x - boxW / 2 + j + hw;
-                var localY = localPoint.y - boxH / 2 + i + hh;
+                // Coordinates in particle container of particle.
+                var particleContainerX = j - boxW / 2;
+                var particleContainerY = i - boxH / 2;
+                // Coordinates relative to ship.
+                var localX = localPoint.x + particleContainerX;
+                var localY = localPoint.y + particleContainerY;
                 if (this.checkAndSetParticleField(localX, localY)) {
                     // Emit.
                     console.log("Emitting");
-                    ClientShip.particleEmitter.emitRect(particleContainer, j, i, 1, 1, {xStep: 2, yStep: 2, explode: true});
+                    ClientShip.particleEmitter.emit(
+                        particleContainer, particleContainerX, particleContainerY, {explode: true});
                 }
             }
         }
-        stage.addChild(particleContainer); // TODO: remove particle container after emission.
+        stage.addChild(particleContainer);
+
+        // Lifetime of particle container *must* be greater than the max lifetime of containing
+        // particles.
+        particleContainers.push({container: particleContainer, lifetime: 2000});
     }
 
     // Interpolates current state for one frame.
@@ -92,6 +102,14 @@ var ClientShip = function(startingState) {
                 stage.removeChild(cannonSprite);
             }
             return;
+        }
+
+        for (var i = 0; i < particleContainers.length; i++) {
+            particleContainers[i].lifetime -= delta;
+            if (particleContainers[i].lifetime <= 0) {
+                particleContainers[i].container.destroy();
+                particleContainers.splice(i, 1);
+            }
         }
 
         delta /= 30;
@@ -177,6 +195,7 @@ var ClientShip = function(startingState) {
 
     var maskSprite = null; // Initially null until a destruction mask is applied.
     var particleField = null; // Initially null until needed.
+    var particleContainers = []; // When a destruction occurs, it creates a temporary container.
 
     var destructionMaskGraphic = new PIXI.Graphics();
     // Start with complete white to show entire ship.
@@ -216,8 +235,8 @@ ClientShip.getParticleField = function() {
         shipSprite.anchor.set(.5, .5);
         shipSprite.position.set(hw / 2, hh / 2);
         // Scale this down slightly since it appears that the particle field covers a slight amount
-        // of the border. TODO: why?
-        shipSprite.scale.set(.5, .5);
+        // of the border. TODO: why? Actually it seems like it favors the right side...
+        shipSprite.scale.set(.47, .47);
         renderer.render(shipSprite);
         document.body.appendChild(renderer.view);
         var imageData = renderer.view.getContext("2d").getImageData(0,0,hw,hh);
