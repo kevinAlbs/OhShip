@@ -34,7 +34,9 @@
     <script src='/js/particle_emitter.js'></script>
 
     <script>
-    PIXI.settings.SCALE_MODE = PIXI.SCALE_MODES.NEAREST;
+        // Uncomment for aliasing.
+        // PIXI.settings.SCALE_MODE = PIXI.SCALE_MODES.NEAREST;
+
         // Constants.
         var kFixedDelta = 60
             kMaxDelta = 500
@@ -79,9 +81,13 @@
         
 
 
-        PIXI.loader.add("ship", "img/ship.png").add("cannonball", "img/cannonball.png").add("cannon", "img/cannon.png").load();
+        PIXI.loader.add("ship", "img/ship.png")
+            .add("cannonball", "img/cannonball.png")
+            .add("cannon", "img/cannon.png")
+            .add("shipStructure", "img/ship-structure.png")
+            .load();
         PIXI.loader.once("complete", function() {
-            playerMap.set(playerId, {ship: new ClientShip({x: 100, y: 100, rotation: .3})});
+            playerMap.set(playerId, {ship: new ClientShip({x: 100, y: 100, rotation: .3, leftEngine: .3, rightEngine: .1})});
             var myShip = playerMap.get(playerId).ship;
 
             var container = document.getElementById("game");
@@ -89,7 +95,7 @@
                 myShip.handleCollision(e.offsetX, e.offsetY);
             })
 
-            renderer.backgroundColor = 0xFFF000;
+            renderer.backgroundColor = 0x577bc5;
             document.getElementById('game').appendChild(renderer.view);
             tick();
         });

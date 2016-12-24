@@ -124,6 +124,12 @@ var ClientShip = function(startingState) {
         shipSprite.position.set(state.x, state.y);
         shipSprite.rotation = state.rotation;
 
+        shadowSprite.rotation = state.rotation;
+        shadowSprite.position.set(state.x, state.y + 3);
+
+        shipStructureSprite.position.set(state.x, state.y);
+        shipStructureSprite.rotation = state.rotation;
+
         cannonSprite.position.set(state.x, state.y);
         cannonSprite.rotation = state.cannonRotation;
     };
@@ -173,16 +179,26 @@ var ClientShip = function(startingState) {
     // Add all sprites for this ship.
     var shipSprite = new PIXI.Sprite(PIXI.loader.resources.ship.texture);
     shipSprite.anchor.set(.5, .5);
-
-    shipSprite.position.x = state.x;
-    shipSprite.position.y = state.y;
+    shipSprite.position.set(state.x, state.y);
     shipSprite.rotation = state.rotation;
+
+    var shipStructureSprite = new PIXI.Sprite(PIXI.loader.resources.shipStructure.texture);
+    shipStructureSprite.anchor.set(.5, .5);
+    shipStructureSprite.position.set(10, 10);
+
+    var shadowSprite = new PIXI.Sprite(PIXI.loader.resources.ship.texture);
+    shadowSprite.tint = 0x20160c;
+    shadowSprite.anchor.set(.5, .5);
 
     var cannonSprite = new PIXI.Sprite(PIXI.loader.resources.cannon.texture);
     cannonSprite.anchor.set(.3, .5);
     cannonSprite.rotation = state.cannonRotation;
+
+    stage.addChild(shadowSprite);
+    stage.addChild(shipStructureSprite);
     stage.addChild(shipSprite);
-    //stage.addChild(cannonSprite);
+    stage.addChild(cannonSprite);
+    
 
     // Add the destruction mask, which will be temporarily stored as a graphic for easy updating
     // but needs to be converted to a sprite for application, which needs to be updated on change.
