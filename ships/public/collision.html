@@ -34,6 +34,7 @@
     <script src='/js/particle_emitter.js'></script>
 
     <script>
+    PIXI.settings.SCALE_MODE = PIXI.SCALE_MODES.NEAREST;
         // Constants.
         var kFixedDelta = 60
             kMaxDelta = 500
@@ -80,7 +81,7 @@
 
         PIXI.loader.add("ship", "img/ship.png").add("cannonball", "img/cannonball.png").add("cannon", "img/cannon.png").load();
         PIXI.loader.once("complete", function() {
-            playerMap.set(playerId, {ship: new ClientShip({x: 100, y: 100, rotation: .1})});
+            playerMap.set(playerId, {ship: new ClientShip({x: 100, y: 100, rotation: 0})});
             var myShip = playerMap.get(playerId).ship;
 
             var container = document.getElementById("game");

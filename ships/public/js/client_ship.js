@@ -25,6 +25,19 @@ var ClientShip = function(startingState) {
         return state;
     }
 
+    // Check if particle field has a 1 for this position, and set to 0 if it does.
+    // Returns true if a 1 was there.
+    this.checkAndSetParticleField = function(localX, localY) {
+        // Scale down and round.
+        var x = Math.floor(localX / 2), y = Math.floor(localY / 2);
+        if (x < 0 || y < 0 || x > 31 || y > particleField.length - 1) return false;
+        var bitPos = (1 << (32 - 1 - x));
+        var val = (particleField[y] & bitPos) != 0 ? 1 : 0;
+        if (val == 0) return false;
+        particleField[y] ^= bitPos; // Set bit to 0.
+        return true;
+    }
+
     // Update the ship mask and add particles.
     this.handleCollision = function(x, y) {
         // x and y are given from global coordinates.
@@ -46,15 +59,13 @@ var ClientShip = function(startingState) {
         particleContainer.x = boxX;
         particleContainer.y = boxY;
         particleContainer.rotation = shipSprite.rotation;
-        for (var i = 0; i < boxH; i++) {
-            for (var j = 0; j < boxW; j++) {
-                var px = Math.floor(localPoint.x - boxW / 2 + j + hw);
-                var py = Math.floor(localPoint.y - boxH / 2 + i + hh);
-                console.log(py, px);
-                if (px < 0 || py < 0 || py > particleField.length - 1 || px > particleField[0].length - 1) continue;
-                if (particleField[py][px]) {
+        for (var i = 0; i < boxH; i += 2) {
+            for (var j = 0; j < boxW; j += 2) {
+                var localX = localPoint.x - boxW / 2 + j + hw;
+                var localY = localPoint.y - boxH / 2 + i + hh;
+                if (this.checkAndSetParticleField(localX, localY)) {
                     // Emit.
-                    particleField[py][px] = 0;
+                    console.log("Emitting");
                     ClientShip.particleEmitter.emitRect(particleContainer, j, i, 1, 1, {xStep: 2, yStep: 2, explode: true});
                 }
             }
@@ -176,7 +187,8 @@ var ClientShip = function(startingState) {
 
     // Create a ship shared particle pool.
     var pixel = new PIXI.Graphics();
-    pixel.beginFill(0x000000);
+    // pixel.beginFill(0x000000);
+    pixel.beginFill(0x3f2e1c);
     pixel.drawRect(0,0,2,2);
     pixel.endFill();
     ClientShip.particleEmitter = new ParticleEmitter(pixel.generateCanvasTexture());
@@ -194,29 +206,40 @@ ClientShip.getParticleField = function() {
         // http://pixijs.download/release/docs/PIXI.CanvasExtract.html
         // TODO: See if CanvasExtract can be used for cleanliness.
 
-        ClientShip._kParticleFieldTemplate = [];
         var shipSprite = new PIXI.Sprite(PIXI.loader.resources.ship.texture);
-        var renderer = new PIXI.CanvasRenderer(181, 91);
+        var hw = Math.floor(shipSprite.width / 2), hh = Math.floor(shipSprite.height / 2);
+        var renderer = new PIXI.CanvasRenderer(hw, hh);
+        var particleField = new Uint32Array(hh);
+        if (!hw == 32)
+            throw 'Particle field implementation assumes ships sprite has width of 64 pixels';
         renderer.backgroundColor = 0xFFFFFF;
+        shipSprite.anchor.set(.5, .5);
+        shipSprite.position.set(hw / 2, hh / 2);
+        // Scale this down slightly since it appears that the particle field covers a slight amount
+        // of the border. TODO: why?
+        shipSprite.scale.set(.5, .5);
         renderer.render(shipSprite);
         document.body.appendChild(renderer.view);
-        var imageData = renderer.view.getContext("2d").getImageData(0,0,181,91);
-        var s = [];
-        for (var i = 0; i < imageData.height; i++) {
-            for (var j = 0; j < imageData.width; j++) {
-                // Check if ship pixel
-                if (imageData.data[i*imageData.width*4 + j*4] < 255) s.push(1);
-                else s.push(0);
+        var imageData = renderer.view.getContext("2d").getImageData(0,0,hw,hh);
+        for (var i = 0; i < hh; i++) {
+            for (var j = 0; j < hw; j++) {
+                if (imageData.data[i * hw * 4 + j * 4] < 255)
+                    particleField[i] |= 1 << (32 - 1 - j);
             }
-            ClientShip._kParticleFieldTemplate.push(s);
-            s = [];
         }
-        // var renderTex = PIXI.RenderTexture.create(181, 91);
-        // console.log(renderTex);
-        // renderer.render(shipSprite, renderTex);
-        // var dataExtractor = new PIXI.extract.canvas(renderTex);
-        // console.log(dataExtractor.pixels());
+
+        // To visualize the bitfield, uncomment below.
+        // var str = "";
+        // for (var i = 0; i < hh; i++) {
+        //     for (var j = 0; j < hw; j++) {
+        //         str += (particleField[i] & (1 << (32 - 1 - j))) == 0 ? 0 : 1;
+        //     }
+        //     str += "\n";
+        // }
+        // console.log(str);
+
+        ClientShip._kParticleFieldTemplate = particleField;
     }
-    // Make a copy of the field. TODO: is this deep?
-    return ClientShip._kParticleFieldTemplate;
+    // Return a copy of the field template.
+    return ClientShip._kParticleFieldTemplate.slice();
 }

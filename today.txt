@@ -1,0 +1,7 @@
+TODAY:
+- Clean up particle emitters (have container destroy on exit)
+- Use real looking cannonball on moving ship to ensure it looks good 
+? Add proper motion to particles
+? Add jagged mask
+
+- Add rest of ship as placeholder
