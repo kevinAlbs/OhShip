@@ -86,13 +86,15 @@
             .load();
 
         PIXI.loader.once("complete", function() {
-            playerMap.set(playerId, {ship: new ClientShip({x: 100, y: 100, rotation: 0, leftEngine: .3, rightEngine: .1})});
+            playerMap.set(playerId, {ship: new ClientShip({x: 400, y: 400, rotation: 0, leftEngine: 0, rightEngine: 0})});
             var myShip = playerMap.get(playerId).ship;
 
             var container = document.getElementById("game");
             container.addEventListener("mousemove", function(e) {
-                myShip.handleCollision(e.offsetX, e.offsetY);
-            })
+                myShip.handleCollision(e.offsetX + 100, e.offsetY + 100);
+            });
+
+            stage.position.set(-100, -100);
 
             renderer.backgroundColor = 0x577bc5;
             document.getElementById('game').appendChild(renderer.view);

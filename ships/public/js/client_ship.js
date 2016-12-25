@@ -43,7 +43,8 @@ var ClientShip = function(startingState, playerId) {
     this.handleCollision = function(x, y) {
         // x and y are given from global coordinates.
         var globalPoint = new PIXI.Point(x,y);
-        var localPoint = shipSprite.toLocal(globalPoint); // TODO: problem is likely with conversion to local point
+        // TODO: is it bad to use stage without explicitly passing?
+        var localPoint = shipSprite.toLocal(globalPoint, stage);
         console.log(localPoint);
         destructionMaskGraphic.beginFill(0x000000);
         destructionMaskGraphic.drawCircle(localPoint.x + hw, localPoint.y + hh, 5);
