@@ -5,7 +5,6 @@ function ClientCannonball(startingState, playerId) {
         y: 0,
         angle: 0
     };
-
     var kTargetDistance = 450,
         distanceLeft = kTargetDistance,
         speed = .5,
@@ -19,7 +18,6 @@ function ClientCannonball(startingState, playerId) {
         state.x += speed * delta * Math.cos(state.angle);
         state.y += speed * delta * Math.sin(state.angle);
         distanceLeft -= speed * delta;
-        console.log(state);
         cannonballSprite.position.set(state.x, state.y);
         cannonballSprite.scale.set(Math.min(1, .5 + (distanceLeft / kTargetDistance)));
         if (distanceLeft <= 0) {

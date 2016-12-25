@@ -21,7 +21,7 @@
                 let shipUpdate = ship.tick(delta);
                 if (shipUpdate) pendingServerUpdates.push(shipUpdate);
             });
-            cannonballs.filter((cannonball) => {
+            cannonballs = cannonballs.filter((cannonball) => {
                 cannonball.tick(delta);
                 playerMap.forEach((player, playerId) => {
                     let ship = player.ship;

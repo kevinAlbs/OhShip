@@ -88,7 +88,7 @@
                 }
             });
 
-            cannonballs.filter(function(cannonball) {
+            cannonballs = cannonballs.filter(function(cannonball) {
                 cannonball.tick(delta);
                 return !cannonball.isSunk();
             });
@@ -127,7 +127,7 @@
                     break;
                 case ServerResponse.type.kSpawn:
                     if (!player) return;
-                    player.ship = new ClientShip(json.data);
+                    player.ship = new ClientShip(json.data, id);
                     myShip = player.ship;
                     break;
                 case ServerResponse.type.kJoin:
@@ -181,9 +181,6 @@
             stage.addChild(new PIXI.extras.TilingSprite(PIXI.loader.resources.water.texture, 10000, 10000));
             document.getElementById('game').appendChild(renderer.view);
             tick();
-            container.addEventListener("mousemove", function(e) {
-                myShip.handleCollision(e.offsetX, e.offsetY);
-            })
         }
 
         // Preload all resources and start.

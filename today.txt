@@ -1,14 +1,24 @@
-TODAY
+[3 hours]
+- User interface
+    + [2 hours] Add username and score
+- [1 hour] Visual effects
+    + Fix death animation
+    + Engine animation
 
-LATER
-- Implement collision of spike and cannon balls on client and server
-- Interpolate errors smoothly
-- Restrict cannon movement to 2^n positions
-- Implement a usable UI or keyboard input
-- Add proper wrapping or boundaries
-- Fix death
+[4.5 hours]
+- Game logic
+    + [1 hour] Boundaries with reasonable spawning
+    + [1 hour] Stupid simple AI (near random movement, fire when near)
+    + [30 minutes] Properly handle leave on client
+    + [30 minutes] Restrict cannon movement to 2^n positions
+    + [1 hour] Interpolate errors smoothly
+    + [30 minutes] Cap the number of players that can connect
+
+[3 hours]
+- Polishing and bug fixes
 
 OPTIONAL
+- Spike collisions
 - Add proper motion to particles
 - Add linear interpolation of masking for cannonball collision
 - Add jagged mask
