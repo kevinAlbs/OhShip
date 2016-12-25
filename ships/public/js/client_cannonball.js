@@ -1,4 +1,4 @@
-function ClientCannonball(startingState) {
+function ClientCannonball(startingState, playerId) {
     // TODO: will need to know owning ship when we implement client visual effects.
     var state = {
         x: 0,
@@ -31,6 +31,14 @@ function ClientCannonball(startingState) {
 
     this.isSunk = function() {
         return sunk;
+    }
+
+    this.getPlayerId = function() {
+        return playerId;
+    }
+
+    this.getState = function() {
+        return state;
     }
 
     var cannonballSprite = new PIXI.Sprite(PIXI.Texture.fromImage('/img/cannonball.png'));

@@ -1,4 +1,4 @@
-var ClientShip = function(startingState) {
+var ClientShip = function(startingState, playerId) {
     // Called when ship state update is recieved from server.
     this.applyServerUpdate = function(json) {
         updateState = json.data;
@@ -10,7 +10,7 @@ var ClientShip = function(startingState) {
             x: state.x,
             y: state.y,
             angle: state.cannonRotation
-        });
+        }, playerId);
     }
 
     this.isSinking = function () {
@@ -43,7 +43,7 @@ var ClientShip = function(startingState) {
     this.handleCollision = function(x, y) {
         // x and y are given from global coordinates.
         var globalPoint = new PIXI.Point(x,y);
-        var localPoint = shipSprite.toLocal(globalPoint);
+        var localPoint = shipSprite.toLocal(globalPoint); // TODO: problem is likely with conversion to local point
         console.log(localPoint);
         destructionMaskGraphic.beginFill(0x000000);
         destructionMaskGraphic.drawCircle(localPoint.x + hw, localPoint.y + hh, 5);
@@ -88,20 +88,20 @@ var ClientShip = function(startingState) {
         updateStateIfNecessary();
 
         if (state.sunk) { // TODO: clean
-            if (sinkTimer > 0) {
-                shipSprite.rotation += .0001 * delta;
-                shipSprite.alpha = Math.min(1, .5 + sinkTimer / 1000);
-                shipSprite.scale.set(.9 + .1 * (sinkTimer / 1000));
-                cannonSprite.rotation += .0001 * delta;
-                cannonSprite.alpha = Math.min(1, .1 + sinkTimer / 1000);
-                cannonSprite.scale.set(.9 + .1 * (sinkTimer / 1000));
-                sinkTimer -= delta;
-            }
-            if (sinkTimer <= 0) {
-                stage.removeChild(shipSprite);
-                stage.removeChild(cannonSprite);
-            }
-            return;
+            // if (sinkTimer > 0) {
+            //     shipSprite.rotation += .0001 * delta;
+            //     shipSprite.alpha = Math.min(1, .5 + sinkTimer / 1000);
+            //     shipSprite.scale.set(.9 + .1 * (sinkTimer / 1000));
+            //     cannonSprite.rotation += .0001 * delta;
+            //     cannonSprite.alpha = Math.min(1, .1 + sinkTimer / 1000);
+            //     cannonSprite.scale.set(.9 + .1 * (sinkTimer / 1000));
+            //     sinkTimer -= delta;
+            // }
+            // if (sinkTimer <= 0) {
+            //     stage.removeChild(shipSprite);
+            //     stage.removeChild(cannonSprite);
+            // }
+            // return;
         }
 
         for (var i = 0; i < particleContainers.length; i++) {
@@ -117,9 +117,13 @@ var ClientShip = function(startingState) {
         var rotationDelta = (state.leftEngine - state.rightEngine) / 100;
         var forwardDelta = state.leftEngine + state.rightEngine;
 
+        // TODO: Somewhat hacky but easy way to compensate for rotation of ship sprite (chosen to
+        // make particle field simpler to use). This may be OK.
+        var hPi = Math.PI / 2;
+
         state.rotation += rotationDelta * delta;
-        state.x += forwardDelta * Math.cos(state.rotation) * delta;
-        state.y += forwardDelta * Math.sin(state.rotation) * delta;
+        state.x += forwardDelta * Math.cos(state.rotation - hPi) * delta;
+        state.y += forwardDelta * Math.sin(state.rotation - hPi) * delta;
 
         shipSprite.position.set(state.x, state.y);
         shipSprite.rotation = state.rotation;

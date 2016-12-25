@@ -79,15 +79,14 @@
             window.requestAnimationFrame(tick);
         }
         
-
-
         PIXI.loader.add("ship", "img/ship.png")
             .add("cannonball", "img/cannonball.png")
             .add("cannon", "img/cannon.png")
             .add("shipStructure", "img/ship-structure.png")
             .load();
+
         PIXI.loader.once("complete", function() {
-            playerMap.set(playerId, {ship: new ClientShip({x: 100, y: 100, rotation: .3, leftEngine: .3, rightEngine: .1})});
+            playerMap.set(playerId, {ship: new ClientShip({x: 100, y: 100, rotation: 0, leftEngine: .3, rightEngine: .1})});
             var myShip = playerMap.get(playerId).ship;
 
             var container = document.getElementById("game");

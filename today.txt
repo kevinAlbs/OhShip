@@ -1,7 +1,21 @@
-TODAY:
-- Clean up particle emitters (have container destroy on exit)
-- Use real looking cannonball on moving ship to ensure it looks good 
-? Add proper motion to particles
-? Add jagged mask
+TODAY
 
-- Add rest of ship as placeholder
+LATER
+- Implement collision of spike and cannon balls on client and server
+- Interpolate errors smoothly
+- Restrict cannon movement to 2^n positions
+- Implement a usable UI or keyboard input
+- Add proper wrapping or boundaries
+- Fix death
+
+OPTIONAL
+- Add proper motion to particles
+- Add linear interpolation of masking for cannonball collision
+- Add jagged mask
+- Add cannonball explosion effect
+- Add AI players
+- Add visual effects for ocean
+- Reimplement server in C++
+- Send only relevant (in region) messages to respective players
+- Use running estimate of latency to predict when movement should occur to reduce error
+- Use compact messages

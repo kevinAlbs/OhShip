@@ -31,6 +31,7 @@
     <script src="/server_response.js"></script>
     <script src='/js/vendor/underscore.js'></script>
     <script src='/js/vendor/pixi.js'></script>
+    <script src='/js/particle_emitter.js'></script>
     <script src='/js/client_ship.js'></script>
     <script src='/js/client_cannonball.js'></script>
 
@@ -67,13 +68,23 @@
             }
 
             // Interpolate.
-            playerMap.forEach(function(player) {
+            playerMap.forEach(function(player, id) {
                 var ship = player.ship;
                 if (ship) {
                     ship.tick(delta);
                     if (ship.isFinishedSinking()) {
                         player.ship = null;
                     }
+                    var shipState = ship.getState();
+                    var sX = shipState.x, sY = shipState.y;
+                    // Check for collisions. TODO: make more efficient using sorting or quad tree.
+                    cannonballs.forEach(function(cannonball) {
+                        var cannonballState = cannonball.getState();
+                        var cX = cannonballState.x, cY = cannonballState.y;
+                        if (cannonball.getPlayerId() != id && Math.pow(sX - cX, 2) + Math.pow(sY - cY, 2) <= Math.pow(90, 2)) {
+                            ship.handleCollision(cX, cY);
+                        }
+                    })
                 }
             });
 
@@ -82,12 +93,17 @@
                 return !cannonball.isSunk();
             });
 
+            if (ClientShip.particleEmitter) {
+                ClientShip.particleEmitter.tick(delta);
+            }
+
             // Center stage if we have a ship.
             var myPlayer = playerMap.get(playerId);
             var myShip = myPlayer ? myPlayer.ship : null;
             if (myShip) {
                 var state = myShip.getState();
-                stage.position.set(renderer.width / 2 - state.x , renderer.height / 2 - state.y);
+                stage.position.set(Math.min(0, renderer.width / 2 - state.x),
+                    Math.min(0, renderer.height / 2 - state.y));
             }
             renderer.render(stage);
             window.requestAnimationFrame(tick);
@@ -112,6 +128,7 @@
                 case ServerResponse.type.kSpawn:
                     if (!player) return;
                     player.ship = new ClientShip(json.data);
+                    myShip = player.ship;
                     break;
                 case ServerResponse.type.kJoin:
                     if (player) return;
@@ -125,7 +142,7 @@
                             id: playerData.id
                         };
                         if (playerData.hasOwnProperty('ship')) {
-                            player.ship = new ClientShip(playerData.ship);
+                            player.ship = new ClientShip(playerData.ship, playerData.id);
                         }
                         playerMap.set(playerData.id, player);
                     });
@@ -159,10 +176,24 @@
             });
         }
 
-        renderer.backgroundColor = 0x4b84f8;
-        document.getElementById('game').appendChild(renderer.view);
-        tick();
+        function start() {
+            renderer.backgroundColor = 0x4b84f8;
+            stage.addChild(new PIXI.extras.TilingSprite(PIXI.loader.resources.water.texture, 10000, 10000));
+            document.getElementById('game').appendChild(renderer.view);
+            tick();
+            container.addEventListener("mousemove", function(e) {
+                myShip.handleCollision(e.offsetX, e.offsetY);
+            })
+        }
 
+        // Preload all resources and start.
+        PIXI.loader.add("ship", "img/ship.png")
+            .add("cannonball", "img/cannonball.png")
+            .add("cannon", "img/cannon.png")
+            .add("shipStructure", "img/ship-structure.png")
+            .add("water", "img/water.png")
+            .load();
+        PIXI.loader.once("complete", start);
 
     </script>
 

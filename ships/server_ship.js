@@ -72,9 +72,10 @@
             var rotationDelta = (state.leftEngine - state.rightEngine) / 100;
             var forwardDelta = state.leftEngine + state.rightEngine;
 
+            var hPi = Math.PI / 2;
             state.rotation += rotationDelta * delta;
-            state.x += forwardDelta * Math.cos(state.rotation) * delta;
-            state.y += forwardDelta * Math.sin(state.rotation) * delta;
+            state.x += forwardDelta * Math.cos(state.rotation - hPi) * delta;
+            state.y += forwardDelta * Math.sin(state.rotation - hPi) * delta;
 
             if (hasUpdated || framesSinceLastUpdate >= MAX_FRAMES_WITHOUT_UPDATE) {
                 // Add interpolated properties.
