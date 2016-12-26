@@ -2,7 +2,7 @@
 // Shared between server and client.
 (function() {
     'use strict';
-    let ServerResponse = {
+    var ServerResponse = {
         type: {
             kWelcome : 0,
             kShipUpdate: 1,

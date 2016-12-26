@@ -110,35 +110,35 @@
         }
         
         function onServerResponse(raw) {
-            let json = ServerResponse.decode(raw.data);
-            console.log('Recieved from server', json);
-            serverResponseBuffer.push(json);
+            var jsonObj = ServerResponse.decode(raw.data);
+            console.log('Recieved from server', jsonObj);
+            serverResponseBuffer.push(jsonObj);
         }
 
         // Called at the beginning of the frame.
-        function applyServerResponse(json) {
-            console.log('Applying', json);
-            let id = json.id;
-            let player = playerMap.has(id) ? playerMap.get(id) : null;
-            let ship = player ? player.ship : null;
-            switch (json.type) {
+        function applyServerResponse(jsonObj) {
+            console.log('Applying', jsonObj);
+            var id = jsonObj.id;
+            var player = playerMap.has(id) ? playerMap.get(id) : null;
+            var ship = player ? player.ship : null;
+            switch (jsonObj.type) {
                 case ServerResponse.type.kWelcome:
                     play(id);
                     break;
                 case ServerResponse.type.kSpawn:
                     if (!player) return;
-                    player.ship = new ClientShip(json.data, id);
+                    player.ship = new ClientShip(jsonObj.data, id);
                     myShip = player.ship;
                     break;
                 case ServerResponse.type.kJoin:
                     if (player) return;
-                    playerMap.set(id, json);
+                    playerMap.set(id, jsonObj);
                     break;
                 case ServerResponse.type.kRefresh:
                     // TODO: clear all ships first?
-                    json.data.forEach(function(playerData) {
+                    jsonObj.data.forEach(function(playerData) {
                         if (playerMap.has(playerData.id)) return;
-                        let player = {
+                        var player = {
                             id: playerData.id
                         };
                         if (playerData.hasOwnProperty('ship')) {
@@ -149,7 +149,7 @@
                     break;
                 case ServerResponse.type.kShipUpdate:
                     if (!player || !ship) return;
-                    ship.applyServerUpdate(json);
+                    ship.applyServerUpdate(jsonObj);
                     break;
                 case ServerResponse.type.kCannonFire:
                     if (!player || !ship) return;
@@ -157,15 +157,15 @@
                     if (cannonball) cannonballs.push(cannonball);
                     break;
                 case ServerResponse.type.kBufferedUpdates:
-                    json.data.forEach(function(message){
+                    jsonObj.data.forEach(function(message){
                         applyServerResponse(message);
                     });
                     break;
             }
         }
 
-        function sendJson(json) {
-            ws.send(ClientMessage.encode(json));
+        function sendJson(jsonObj) {
+            ws.send(ClientMessage.encode(jsonObj));
         }
         
         function play(id) {

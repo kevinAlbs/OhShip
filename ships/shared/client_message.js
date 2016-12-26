@@ -2,7 +2,7 @@
 // Shared between server and client.
 (function() {
     'use strict';
-    let ClientMessage = {
+    var ClientMessage = {
         type: {
             kCannonFire : 0,
             kShipUpdate: 1,
