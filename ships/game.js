@@ -93,8 +93,8 @@
                     }
                     pendingServerUpdates.push({
                         id: id,
-                        type: ServerResponse.type.kCannonFire
-                        // TODO: include starting coordinates/angle since client may be inexact.
+                        type: ServerResponse.type.kCannonFire,
+                        data: cannonball.getState() // Include starting coordinates and rotation.
                     });
                     break;
                 case ClientMessage.type.kSetNickname:

@@ -183,7 +183,7 @@
                     playerMap.set(id, jsonObj);
                     break;
                 case ServerResponse.type.kRefresh:
-                    // TODO: clear all ships first?
+                    // TODO: clear all ships first
                     jsonObj.data.forEach(function(playerData) {
                         if (playerMap.has(playerData.id)) return;
                         var player = {
@@ -201,13 +201,17 @@
                     break;
                 case ServerResponse.type.kCannonFire:
                     if (!player || !ship) return;
-                    var cannonball = ship.attemptCannonFire();
+                    var cannonball = ship.attemptCannonFire(jsonObj.data);
                     if (cannonball) cannonballs.push(cannonball);
                     break;
                 case ServerResponse.type.kBufferedUpdates:
                     jsonObj.data.forEach(function(message){
                         applyServerResponse(message);
                     });
+                    break;
+                case ServerResponse.type.kError:
+                    if (jsonObj.data.maxReached);
+                    alert(jsonObj.data.message);
                     break;
             }
         }

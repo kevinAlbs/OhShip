@@ -17,7 +17,7 @@ Messaging should be
     // Responsible for managing client connections and forwarded decoded messages to/from game.
     function Manager(wss) {
         'use strict';
-        const kMaxConnections = 65536 // should be high since observers don't add much load.
+        const kMaxConnections = 5
         , kFixedDelta = 100
         ;
 
@@ -83,8 +83,11 @@ Messaging should be
 
         function _onConnect(ws) {
             if (clientMap.size >= kMaxConnections) {
-                ws.send(ServerResponse.fromError(
-                    'Cannot connect, maximum number of connections reached'));
+                wss.safeSend(ws, {type: ServerResponse.type.kError, data: {
+                    maxReached: kMaxConnections,
+                    message: 'The maximum number of players has been reached'
+                }});
+                ws.close();
                 return;
             }
             ws.id = _idCounter++;

@@ -79,7 +79,6 @@
         };
 
         this.attemptCannonFire = function() {
-            // TODO: ensure count.
             console.log("Firing cannon!");
             return new ServerCannonball({
                 x: state.x,

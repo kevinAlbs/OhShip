@@ -4,12 +4,15 @@ var ClientShip = function(startingState, playerId) {
         updateState = json.data;
     }
 
-    this.attemptCannonFire = function() {
+    this.attemptCannonFire = function(startingState) {
         // TODO: ensure count.
+        var positionErrorThreshold = 0;
+        // TODO: If the starting state position is significantly different, just override, otherwise take midpoint.
+        // But always use the angle given.
         return new ClientCannonball({
             x: state.x,
             y: state.y,
-            angle: state.cannonRotation
+            angle: startingState.angle
         }, playerId);
     }
 

@@ -2,7 +2,7 @@
 - User interface
     + [2 hours] Add username and score
 - [1 hour] Visual effects
-    + Fix death animation
+    + Fix death animation and remove from display list
     + Engine animation
 
 [4.5 hours expected]
@@ -10,17 +10,22 @@
     + [1 hour] Boundaries with reasonable spawning [done?, about 1.5 hr]
     + [30 minutes] Properly handle leave on client [doneish, about .5 hr]
 	+ [30 minutes] Restrict cannon movement to 2^n positions [done, about .25 hr]
-	+ [30 minutes] Cap the number of players that can connect
+	+ [30 minutes] Cap the number of players that can connect [done, about .25 hr]
+    + [30 minutes] Share coordinates of cannonball instead of when a fire occurs. [done, about .25 hr]
 	+ [1 hour] Interpolate errors smoothly
     + [1 hour] Stupid simple AI (near random movement, fire when near)
-    + [30 minutes] Share coordinates of cannonball instead of when a fire occurs.
+    
 
 [3 hours]
 - Polishing and bug fixes
 - Sanitize input!
 
 OPTIONAL
+<<<<<<< HEAD
 - Enforce uniqueness among nicknames
+=======
+- Are messages applied in the right order on the client? I was getting weird issues with cannonballs before, where the cannonball would incorrectly fire the direction of the cannon before rotation.
+>>>>>>> Have cannonball message pass angle
 - Server tests
 - Client tests
 - Boundary graphics
