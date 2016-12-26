@@ -47,7 +47,7 @@
             , cannonballs = []
             , ws = new WebSocket('ws://localhost:4080')
             , stage = new PIXI.Container()
-            , renderer = PIXI.autoDetectRenderer(1000, 600)
+            , renderer = PIXI.autoDetectRenderer(800, 400)
             , serverResponseBuffer = []
             , prevTime = 0
             ;
@@ -185,6 +185,12 @@
             stage.addChild(new PIXI.extras.TilingSprite(PIXI.loader.resources.water.texture, 10000, 10000));
             document.getElementById('game').appendChild(renderer.view);
             tick();
+        }
+
+        function respawn() {
+            sendJson({
+                type: ClientMessage.type.kSpawn
+            });
         }
 
         // Preload all resources and start.

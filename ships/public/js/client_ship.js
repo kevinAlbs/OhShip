@@ -88,22 +88,22 @@ var ClientShip = function(startingState, playerId) {
     this.tick = function(delta) {
         updateStateIfNecessary();
 
-        if (state.sunk) { // TODO: clean
-            // if (sinkTimer > 0) {
-            //     shipSprite.rotation += .0001 * delta;
-            //     shipSprite.alpha = Math.min(1, .5 + sinkTimer / 1000);
-            //     shipSprite.scale.set(.9 + .1 * (sinkTimer / 1000));
-            //     cannonSprite.rotation += .0001 * delta;
-            //     cannonSprite.alpha = Math.min(1, .1 + sinkTimer / 1000);
-            //     cannonSprite.scale.set(.9 + .1 * (sinkTimer / 1000));
-            //     sinkTimer -= delta;
-            // }
-            // if (sinkTimer <= 0) {
-            //     stage.removeChild(shipSprite);
-            //     stage.removeChild(cannonSprite);
-            // }
-            // return;
-        }
+        // if (state.sunk) { // TODO: clean
+        //     if (sinkTimer > 0) {
+        //         shipSprite.rotation += .0001 * delta;
+        //         shipSprite.alpha = Math.min(1, .5 + sinkTimer / 1000);
+        //         shipSprite.scale.set(.9 + .1 * (sinkTimer / 1000));
+        //         cannonSprite.rotation += .0001 * delta;
+        //         cannonSprite.alpha = Math.min(1, .1 + sinkTimer / 1000);
+        //         cannonSprite.scale.set(.9 + .1 * (sinkTimer / 1000));
+        //         sinkTimer -= delta;
+        //     }
+        //     if (sinkTimer <= 0) {
+        //         stage.removeChild(shipSprite);
+        //         stage.removeChild(cannonSprite);
+        //     }
+        //     return;
+        // }
 
         for (var i = 0; i < particleContainers.length; i++) {
             particleContainers[i].lifetime -= delta;
@@ -131,6 +131,8 @@ var ClientShip = function(startingState, playerId) {
         state.x = Math.min(state.x, GameConfig.worldWidth);
         state.y = Math.max(0, state.y);
         state.y = Math.min(state.y, GameConfig.worldHeight);
+
+        console.log(state.x + "," + state.y);
 
         shipSprite.position.set(state.x, state.y);
         shipSprite.rotation = state.rotation;
@@ -287,5 +289,5 @@ ClientShip.getParticleField = function() {
         ClientShip._kParticleFieldTemplate = particleField;
     }
     // Return a copy of the field template.
-    return ClientShip._kParticleFieldTemplate.slice();
+    return new Uint32Array(ClientShip._kParticleFieldTemplate);
 }

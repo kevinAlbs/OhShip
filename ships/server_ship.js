@@ -23,6 +23,31 @@
             }
         }
 
+        if (id % 2 == 0) {
+            state = {
+                x: 100,
+                y: 100,
+                rotation: 0,
+                leftEngine: 0,
+                rightEngine: 0,
+                cannonRotation: 0,
+                flagColor: 0x000000,
+                sunk: false
+            }
+        } else {
+            state = {
+                x: 300,
+                y: 100,
+                rotation: 0,
+                leftEngine: 0,
+                rightEngine: 0,
+                cannonRotation: Math.PI,
+                flagColor: 0x000000,
+                sunk: false
+            }
+        }
+        
+
         const MAX_FRAMES_WITHOUT_UPDATE = 100
         ;
 

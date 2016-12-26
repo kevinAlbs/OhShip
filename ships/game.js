@@ -151,7 +151,6 @@
                     trialsLeft--;
                     return getSpawnCoordinates();
                 }
-                if (trialsLeft == 0) console.log("Gave up");
                 return {x: sx, y: sy};
             }
             var startingState = getSpawnCoordinates();
