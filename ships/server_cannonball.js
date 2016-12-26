@@ -1,6 +1,5 @@
 function ServerCannonball(startingState, playerId) {
     var state = startingState;
-    console.log(state);
 
     var kTargetDistance = 450,
         distanceLeft = kTargetDistance,
@@ -9,8 +8,10 @@ function ServerCannonball(startingState, playerId) {
 
     this.tick = function(delta) {
         if (sunk) return;
-        state.x += speed * delta * Math.cos(state.angle);
-        state.y += speed * delta * Math.sin(state.angle);
+        // Angles are given in eighths.
+        var angle = state.angle * 2 * Math.PI / 8;
+        state.x += speed * delta * Math.cos(angle);
+        state.y += speed * delta * Math.sin(angle);
         distanceLeft -= speed * delta;
         if (distanceLeft <= 0) sunk = true;
     }

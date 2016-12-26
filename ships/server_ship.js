@@ -12,7 +12,7 @@
             leftEngine: 0,
             rightEngine: 0,
             rotation: 0,
-            cannonRotation: Math.random() * Math.PI * 2,
+            cannonRotation: 0, // 0-7, integer
             flagColor: 0x000000,
             sunk: false,
         };
@@ -72,7 +72,9 @@
             if (json.hasOwnProperty('cannonRotation')) {
                 state.cannonRotation = json.cannonRotation;
                 hasUpdated = true;
-                updateState.cannonRotation = json.cannonRotation;
+                var cleanedRotation = parseInt(json.cannonRotation);
+                if (cleanedRotation < 0 || cleanedRotation > 7) cleanedRotation = 0;
+                updateState.cannonRotation = cleanedRotation;
             }
         };
 

@@ -132,8 +132,6 @@ var ClientShip = function(startingState, playerId) {
         state.y = Math.max(0, state.y);
         state.y = Math.min(state.y, GameConfig.worldHeight);
 
-        console.log(state.x + "," + state.y);
-
         shipSprite.position.set(state.x, state.y);
         shipSprite.rotation = state.rotation;
 
@@ -144,7 +142,7 @@ var ClientShip = function(startingState, playerId) {
         shipStructureSprite.rotation = state.rotation;
 
         cannonSprite.position.set(state.x, state.y);
-        cannonSprite.rotation = state.cannonRotation;
+        cannonSprite.rotation = state.cannonRotation * 2 * Math.PI / 8;
     };
 
     function updateStateIfNecessary() {

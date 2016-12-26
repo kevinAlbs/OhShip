@@ -17,14 +17,14 @@ document.getElementById('slider-left').addEventListener('change', function(ev) {
 document.getElementById('move-cannon-left').addEventListener('mouseup', function(ev) {
     sendJson({
         type: ClientMessage.type.kShipUpdate,
-        cannonRotation: playerMap.get(playerId).ship.getState().cannonRotation - .1
+        cannonRotation: (playerMap.get(playerId).ship.getState().cannonRotation + 1) % 8
     });
 });
 
 document.getElementById('move-cannon-right').addEventListener('mouseup', function(ev) {
     sendJson({
         type: ClientMessage.type.kShipUpdate,
-        cannonRotation: playerMap.get(playerId).ship.getState().cannonRotation + .1
+        cannonRotation: (playerMap.get(playerId).ship.getState().cannonRotation - 1) % 8
     });
 });
 

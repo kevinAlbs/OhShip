@@ -15,8 +15,10 @@ function ClientCannonball(startingState, playerId) {
 
     this.tick = function(delta) {
         if (sunk) return;
-        state.x += speed * delta * Math.cos(state.angle);
-        state.y += speed * delta * Math.sin(state.angle);
+        // Angles are given in eighths.
+        var angle = state.angle * 2 * Math.PI / 8;
+        state.x += speed * delta * Math.cos(angle);
+        state.y += speed * delta * Math.sin(angle);
         distanceLeft -= speed * delta;
         cannonballSprite.position.set(state.x, state.y);
         cannonballSprite.scale.set(Math.min(1, .5 + (distanceLeft / kTargetDistance)));
