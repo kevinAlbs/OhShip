@@ -1,9 +1,10 @@
 [3 hours]
-- User interface
-    + [2 hours] Add username and score
+- [2 hours] User interface
+    + Add username and score
 - [1 hour] Visual effects
     + Fix death animation and remove from display list
     + Engine animation
+    + Avoid particles and masks for offscreen ships
 
 [4.5 hours expected]
 - Game logic
@@ -12,7 +13,7 @@
 	+ [30 minutes] Restrict cannon movement to 2^n positions [done, about .25 hr]
 	+ [30 minutes] Cap the number of players that can connect [done, about .25 hr]
     + [30 minutes] Share coordinates of cannonball instead of when a fire occurs. [done, about .25 hr]
-	+ [1 hour] Interpolate errors smoothly
+	+ [1 hour] Interpolate errors smoothly [done, about .75 hr]
     + [1 hour] Stupid simple AI (near random movement, fire when near)
     
 
@@ -22,10 +23,14 @@
 
 OPTIONAL
 <<<<<<< HEAD
+<<<<<<< HEAD
 - Enforce uniqueness among nicknames
 =======
 - Are messages applied in the right order on the client? I was getting weird issues with cannonballs before, where the cannonball would incorrectly fire the direction of the cannon before rotation.
 >>>>>>> Have cannonball message pass angle
+=======
+- Are messages applied in the right order on the client? I was getting weird issues with cannonballs before, where the cannonball would incorrectly fire the direction of the cannon before rotation. ACTUALLY, it is likely because state update is deferred in client ship. Is this a good idea?
+>>>>>>> Interpolate error on client
 - Server tests
 - Client tests
 - Boundary graphics

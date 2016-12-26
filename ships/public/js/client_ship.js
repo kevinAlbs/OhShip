@@ -10,8 +10,8 @@ var ClientShip = function(startingState, playerId) {
         // TODO: If the starting state position is significantly different, just override, otherwise take midpoint.
         // But always use the angle given.
         return new ClientCannonball({
-            x: state.x,
-            y: state.y,
+            x: startingState.x,
+            y: startingState.y,
             angle: startingState.angle
         }, playerId);
     }
@@ -87,6 +87,51 @@ var ClientShip = function(startingState, playerId) {
         particleContainers.push({container: particleContainer, lifetime: 2000});
     }
 
+    function tickState(delta, st) {
+        scale = delta / 30;
+
+        var rotationDelta = (st.leftEngine - st.rightEngine) / 100;
+        var forwardDelta = st.leftEngine + st.rightEngine;
+
+        // TODO: Somewhat hacky but easy way to compensate for rotation of ship sprite (chosen to
+        // make particle field simpler to use). This may be OK.
+        var hPi = Math.PI / 2;
+
+        st.rotation += rotationDelta * scale;
+        st.x += forwardDelta * Math.cos(st.rotation - hPi) * scale;
+        st.y += forwardDelta * Math.sin(st.rotation - hPi) * scale;
+
+        // Bound coordinates.
+        st.x = Math.max(0, st.x);
+        st.x = Math.min(st.x, GameConfig.worldWidth);
+        st.y = Math.max(0, st.y);
+        st.y = Math.min(st.y, GameConfig.worldHeight);
+    }
+
+    function interpolate(delta) {
+        // If the target state position or rotation is beyond a threshold away from the displayed
+        // state, completely override it. Otherwise, we'll interpolate it.
+        var xDiff = targetState.x - state.x, yDiff = targetState.y - state.y;
+        var rotDiff = targetState.rotation - state.rotation;
+        if (Math.pow(xDiff, 2) + Math.pow(yDiff, 2) > Math.pow(GameConfig.shipRadius / 3, 2)) {
+            // Override
+            state.x = targetState.x;
+            state.y = targetState.y;
+        } else {
+            // Interpolate
+            state.x += xDiff * .05;
+            state.y += yDiff * .05;
+        }
+
+        if (Math.abs(rotDiff) > Math.PI / 4) {
+            // Override
+            state.rotation = targetState.rotation;
+        } else {
+            // Interpolate
+            state.rotation += (targetState.rotation - state.rotation) * .01;
+        }
+    }
+
     // Interpolates current state for one frame.
     this.tick = function(delta) {
         updateStateIfNecessary();
@@ -101,24 +146,9 @@ var ClientShip = function(startingState, playerId) {
             }
         }
 
-        delta /= 30;
-
-        var rotationDelta = (state.leftEngine - state.rightEngine) / 100;
-        var forwardDelta = state.leftEngine + state.rightEngine;
-
-        // TODO: Somewhat hacky but easy way to compensate for rotation of ship sprite (chosen to
-        // make particle field simpler to use). This may be OK.
-        var hPi = Math.PI / 2;
-
-        state.rotation += rotationDelta * delta;
-        state.x += forwardDelta * Math.cos(state.rotation - hPi) * delta;
-        state.y += forwardDelta * Math.sin(state.rotation - hPi) * delta;
-
-        // Bound coordinates.
-        state.x = Math.max(0, state.x);
-        state.x = Math.min(state.x, GameConfig.worldWidth);
-        state.y = Math.max(0, state.y);
-        state.y = Math.min(state.y, GameConfig.worldHeight);
+        tickState(delta, state);
+        tickState(delta, targetState);
+        interpolate(delta);
 
         shipSprite.position.set(state.x, state.y);
         shipSprite.rotation = state.rotation;
@@ -135,13 +165,17 @@ var ClientShip = function(startingState, playerId) {
 
     function updateStateIfNecessary() {
         if (!updateState) return;
-        _.extend(state, updateState);
+        // Only directly copy over the engine values to the directly used state.
+        if (updateState.leftEngine) state.leftEngine = updateState.leftEngine;
+        if (updateState.rightEngine) state.rightEngine = updateState.rightEngine;
+        if (updateState.cannonRotation) state.cannonRotation = updateState.cannonRotation;
+        // The target state however, will store the most accurate representation.
+        _.extend(targetState, updateState);
 
         if (updateState.sunk) {
             sinkTimer = 2000;
         }
 
-        console.log(state);
         updateState = null;
     }
 
@@ -205,6 +239,9 @@ var ClientShip = function(startingState, playerId) {
     };
 
     _.extend(state, startingState);
+
+    var targetState = {};
+    _.extend(targetState, state);
 
     // If present, this is the udpated state recieved from server.
     var updateState = null;
