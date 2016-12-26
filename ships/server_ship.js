@@ -3,18 +3,25 @@
     let ClientMessage = require('./shared/client_message')
     , ServerResponse = require('./shared/server_response')
     , ServerCannonball = require('./server_cannonball')
+    , GameConfig = require('./shared/config')
     ;
-    let ServerShip = function(id) {
+    let ServerShip = function(id, startingState) {
         let state = {
             x: Math.random() * 500 + 100,
             y: Math.random() * 300 + 100,
             leftEngine: 0,
             rightEngine: 0,
-            rotation: Math.random() * Math.PI * 2,
+            rotation: 0,
             cannonRotation: Math.random() * Math.PI * 2,
             flagColor: 0x000000,
             sunk: false,
         };
+
+        if (startingState) {
+            for (var prop in startingState) {
+                if (startingState.hasOwnProperty(prop)) state[prop] = startingState[prop];
+            }
+        }
 
         const MAX_FRAMES_WITHOUT_UPDATE = 100
         ;
@@ -76,6 +83,12 @@
             state.rotation += rotationDelta * delta;
             state.x += forwardDelta * Math.cos(state.rotation - hPi) * delta;
             state.y += forwardDelta * Math.sin(state.rotation - hPi) * delta;
+
+            // Bound coordinates.
+            state.x = Math.max(0, state.x);
+            state.x = Math.min(state.x, GameConfig.worldWidth);
+            state.y = Math.max(0, state.y);
+            state.y = Math.min(state.y, GameConfig.worldHeight);
 
             if (hasUpdated || framesSinceLastUpdate >= MAX_FRAMES_WITHOUT_UPDATE) {
                 // Add interpolated properties.

@@ -29,6 +29,7 @@
 
     <script src="/client_message.js"></script>
     <script src="/server_response.js"></script>
+    <script src="/config.js"></script>
     <script src='/js/vendor/underscore.js'></script>
     <script src='/js/vendor/pixi.js'></script>
     <script src='/js/particle_emitter.js'></script>
@@ -102,8 +103,11 @@
             var myShip = myPlayer ? myPlayer.ship : null;
             if (myShip) {
                 var state = myShip.getState();
-                stage.position.set(Math.min(0, renderer.width / 2 - state.x),
-                    Math.min(0, renderer.height / 2 - state.y));
+                var bound = function(x, min, max) { return Math.min(Math.max(x, min), max); }
+                stage.position.set(
+                    bound(renderer.width / 2 - state.x, -GameConfig.worldWidth + renderer.width, 0),
+                    bound(renderer.height / 2 - state.y, -GameConfig.worldHeight + renderer.height, 0)
+                    );
             }
             renderer.render(stage);
             window.requestAnimationFrame(tick);

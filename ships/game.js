@@ -4,6 +4,7 @@
     let ServerResponse = require('./shared/server_response')
     , ClientMessage = require('./shared/client_message')
     , ServerShip = require('./server_ship')
+    , GameConfig = require('./shared/config')
     ;
 
     function Game() {
@@ -55,7 +56,6 @@
                     // TODO: check that nickname is available.
                     console.log("Player " + json.nickname + " has joined");
                     if (playerMap.has(id)) return; // TODO: errors.
-                    let newShip = new ServerShip(json);
                     playerMap.set(id, {
                         ship: null,
                         nickname: json.nickname
@@ -130,7 +130,32 @@
             if (!playerMap.has(id)) return;
             let player = playerMap.get(id);
             if (player.ship) return; // Player is already spawned.
-            player.ship = new ServerShip(id);
+            // Find a spawn location within a 100 pixel padding of the boundary not intersecting other ships.
+            // TODO: Replace this with something more sophisticated.
+            var trialsLeft = 3;
+            function getSpawnCoordinates() {
+                var sx = GameConfig.shipRadius + Math.random() * (GameConfig.worldWidth - 2 * GameConfig.shipRadius);
+                var sy = GameConfig.shipRadius + Math.random() * (GameConfig.worldHeight - 2 * GameConfig.shipRadius);
+                var tooClose = false;
+                // Check if other ships are too close.
+                for (var player of playerMap.entries()) {
+                    var ship = player.ship;
+                    if (!ship) continue;
+                    var shipState = ship.getState(), shipX = shipState.x, shipY = shipState.y;
+                    if (Math.pow(shipX - sx, 2) + Math.pow(shipY - sy, 2) < Math.pow(GameConfig.shipRadius, 2)) {
+                        tooClose = true;
+                        break;
+                    }
+                }
+                if (tooClose && trialsLeft > 0) {
+                    trialsLeft--;
+                    return getSpawnCoordinates();
+                }
+                if (trialsLeft == 0) console.log("Gave up");
+                return {x: sx, y: sy};
+            }
+            var startingState = getSpawnCoordinates();
+            player.ship = new ServerShip(id, startingState);
             pendingServerUpdates.push({
                 id: id,
                 type: ServerResponse.type.kSpawn,

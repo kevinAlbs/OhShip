@@ -126,6 +126,12 @@ var ClientShip = function(startingState, playerId) {
         state.x += forwardDelta * Math.cos(state.rotation - hPi) * delta;
         state.y += forwardDelta * Math.sin(state.rotation - hPi) * delta;
 
+        // Bound coordinates.
+        state.x = Math.max(0, state.x);
+        state.x = Math.min(state.x, GameConfig.worldWidth);
+        state.y = Math.max(0, state.y);
+        state.y = Math.min(state.y, GameConfig.worldHeight);
+
         shipSprite.position.set(state.x, state.y);
         shipSprite.rotation = state.rotation;
 

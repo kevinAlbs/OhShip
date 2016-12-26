@@ -7,12 +7,12 @@
 
 [4.5 hours]
 - Game logic
-    + [1 hour] Boundaries with reasonable spawning
-    + [1 hour] Stupid simple AI (near random movement, fire when near)
+    + [1 hour] Boundaries with reasonable spawning [done?]
     + [30 minutes] Properly handle leave on client
-    + [30 minutes] Restrict cannon movement to 2^n positions
-    + [1 hour] Interpolate errors smoothly
-    + [30 minutes] Cap the number of players that can connect
+	+ [30 minutes] Restrict cannon movement to 2^n positions
+	+ [30 minutes] Cap the number of players that can connect
+	+ [1 hour] Interpolate errors smoothly
+    + [1 hour] Stupid simple AI (near random movement, fire when near)
 
 [3 hours]
 - Polishing and bug fixes
