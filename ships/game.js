@@ -54,7 +54,12 @@
             switch (json.type) {
                 case ClientMessage.type.kJoin:
                     // TODO: check that nickname is available.
-                    console.log("Player " + json.nickname + " has joined");
+                    // Only allow alphanumerics
+                    var nick = json.nickname;
+                    if (typeof(nick) !== 'string') nick = "player" + id;
+                    nick = nick.replace(/[^A-Z0-9]/ig, '');
+                    if (nick.length == 0) nick = "player" + id;
+                    console.log("Player " + nick + " has joined");
                     if (playerMap.has(id)) return; // TODO: errors.
                     playerMap.set(id, {
                         ship: null,

@@ -41,7 +41,7 @@
                 rotation: 0,
                 leftEngine: 0,
                 rightEngine: 0,
-                cannonRotation: Math.PI,
+                cannonRotation: 4,
                 flagColor: 0x000000,
                 sunk: false
             }

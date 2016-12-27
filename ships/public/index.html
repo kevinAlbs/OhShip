@@ -9,10 +9,26 @@
     <meta name="author" content="Kevin Albertson">
 
     <style type="text/css">
-
         #container {
-            width: 1000px;
+            width: 800px;
             margin: 0px auto;
+        }
+        #controls {
+            width: 100%;
+        }
+        #controls [data-panel=play], #controls [data-panel=respawn] {
+            text-align: center;
+        }
+        #controls section {
+            background: #EEE;
+            border: 1px black solid;
+            display: none;
+        }
+
+        #controls[data-showing=play] [data-panel=play],
+        #controls[data-showing=controls] [data-panel=controls],
+        #controls[data-showing=respawn] [data-panel=respawn] {
+            display: block;
         }
     </style>
 
@@ -24,6 +40,23 @@
 <body>
     <div id="container">
         <div id='game'></div>
+        <div id='controls' data-showing='play'>
+            <section data-panel='play'>
+                <small>play</small>
+                <div>
+                    <input type='text' id='play-nick' placeholder='Enter nickname (optional)' />
+                </div>
+                <button id='play-btn'>Play</button>
+            </section>
+            <section data-panel='controls'>
+                <small>controls</small>
+                TODO
+            </section>
+            <section data-panel='respawn'>
+                <small>respawn</small>
+                <button>Respawn</button>
+            </section>
+        </div>
         <div id='debug-controls'></div>
     </div>
 
@@ -35,12 +68,16 @@
     <script src='/js/particle_emitter.js'></script>
     <script src='/js/client_ship.js'></script>
     <script src='/js/client_cannonball.js'></script>
+    <script src='/js/ui.js'></script>
 
     <script>
         // Constants.
         var kFixedDelta = 60
             kMaxDelta = 500
             ;
+
+        // Utility functions.
+        function bound(x, min, max) { return Math.min(Math.max(x, min), max); }
 
         var playerMap = new Map()
             , playerId = null
@@ -75,6 +112,10 @@
                     ship.tick(delta);
                     if (ship.isFinishedSinking()) {
                         player.ship = null;
+                        if (player.id == playerId) {
+                            // Update UI.
+                            UI.setScreen('respawn');
+                        }
                     }
                     var shipState = ship.getState();
                     var sX = shipState.x, sY = shipState.y;
@@ -103,7 +144,6 @@
             var myShip = myPlayer ? myPlayer.ship : null;
             if (myShip) {
                 var state = myShip.getState();
-                var bound = function(x, min, max) { return Math.min(Math.max(x, min), max); }
                 stage.position.set(
                     bound(renderer.width / 2 - state.x, -GameConfig.worldWidth + renderer.width, 0),
                     bound(renderer.height / 2 - state.y, -GameConfig.worldHeight + renderer.height, 0)
@@ -127,7 +167,7 @@
             var ship = player ? player.ship : null;
             switch (jsonObj.type) {
                 case ServerResponse.type.kWelcome:
-                    play(id);
+                    playerId = id;
                     break;
                 case ServerResponse.type.kSpawn:
                     if (!player) return;
@@ -172,18 +212,18 @@
             ws.send(ClientMessage.encode(jsonObj));
         }
         
-        function play(id) {
-            playerId = id;
-            sendJson({
-                type: ClientMessage.type.kJoin,
-                nickname: "kevin" + playerId
-            });
+        function play(nickname) {
+            console.log("Using nickname " + nickname);
+            var msg = {type: ClientMessage.type.kJoin};
+            if (nickname) msg.nickname = nickname;
+            sendJson(msg);
         }
 
         function start() {
             renderer.backgroundColor = 0x4b84f8;
             stage.addChild(new PIXI.extras.TilingSprite(PIXI.loader.resources.water.texture, 10000, 10000));
             document.getElementById('game').appendChild(renderer.view);
+            UI.init();
             tick();
         }
 
@@ -204,6 +244,5 @@
 
     </script>
 
-    <script src='/js/debug_controls.js'></script>
 </body>
 </html>

@@ -1,3 +1,11 @@
+/*
+Messaging should be
+1. User connects
+2. Server sends kWelcome with a unique id for the connection
+3. Client sends either kJoin or (not implemented yet) kObserve to signify how they will be interacting.
+    kJoin is sent along with optional nickname.
+4. Bi-directional communication through other data messaging
+*/
 (function(){
     'use strict';
     let Game = require('./game')

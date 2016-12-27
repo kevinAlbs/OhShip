@@ -20,6 +20,7 @@
 - Sanitize input!
 
 OPTIONAL
+- Enforce uniqueness among nicknames
 - Server tests
 - Client tests
 - Boundary graphics
