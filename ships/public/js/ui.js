@@ -10,6 +10,13 @@ var UI = (function(){
         setScreen('controls');
     }
 
+    function onRespawnPressed() {
+        sendJson({
+            type: ClientMessage.type.kSpawn
+        });
+        setScreen('controls');
+    }
+
     function onKeyUp(e) {
         console.log(e);
         // Only accept keyboard input for controls screen.
@@ -22,6 +29,8 @@ var UI = (function(){
 
     function init() {
         playScreen.btn.addEventListener('click', onPlayPressed);
+        respawnScreen.btn.addEventListener('click', onRespawnPressed);
+
         document.addEventListener('keyup', onKeyUp);
         var keyCodes = {
             Q: 81,
@@ -67,6 +76,9 @@ var UI = (function(){
     , playScreen = {
         btn: document.getElementById('play-btn'),
         nick: document.getElementById('play-nick')
+    }
+    , respawnScreen = {
+        btn: document.getElementById('respawn-btn')
     }
     , currentState = {
         leftEngine: 0,

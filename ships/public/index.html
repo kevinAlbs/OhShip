@@ -49,12 +49,12 @@
                 <button id='play-btn'>Play</button>
             </section>
             <section data-panel='controls'>
-                <small>controls</small>
+                <small>controls</small><br/>
                 TODO
             </section>
             <section data-panel='respawn'>
-                <small>respawn</small>
-                <button>Respawn</button>
+                <small>respawn</small><br/>
+                <button id='respawn-btn'>Respawn</button>
             </section>
         </div>
         <div id='debug-controls'></div>
@@ -111,6 +111,7 @@
                 if (ship) {
                     ship.tick(delta);
                     if (ship.isFinishedSinking()) {
+                        ship.removeSprites();
                         player.ship = null;
                         if (player.id == playerId) {
                             // Update UI.
@@ -171,8 +172,11 @@
                     break;
                 case ServerResponse.type.kSpawn:
                     if (!player) return;
+                    if (player.ship) {
+                        // Remove sprites, this can occur if the other player spawns before the sinking animation finisheds.
+                        player.ship.removeSprites();
+                    }
                     player.ship = new ClientShip(jsonObj.data, id);
-                    myShip = player.ship;
                     break;
                 case ServerResponse.type.kJoin:
                     if (player) return;

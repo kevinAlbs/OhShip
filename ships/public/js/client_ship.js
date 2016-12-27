@@ -88,22 +88,7 @@ var ClientShip = function(startingState, playerId) {
     this.tick = function(delta) {
         updateStateIfNecessary();
 
-        // if (state.sunk) { // TODO: clean
-        //     if (sinkTimer > 0) {
-        //         shipSprite.rotation += .0001 * delta;
-        //         shipSprite.alpha = Math.min(1, .5 + sinkTimer / 1000);
-        //         shipSprite.scale.set(.9 + .1 * (sinkTimer / 1000));
-        //         cannonSprite.rotation += .0001 * delta;
-        //         cannonSprite.alpha = Math.min(1, .1 + sinkTimer / 1000);
-        //         cannonSprite.scale.set(.9 + .1 * (sinkTimer / 1000));
-        //         sinkTimer -= delta;
-        //     }
-        //     if (sinkTimer <= 0) {
-        //         stage.removeChild(shipSprite);
-        //         stage.removeChild(cannonSprite);
-        //     }
-        //     return;
-        // }
+        if (state.sunk) interpolateSinking(delta);
 
         for (var i = 0; i < particleContainers.length; i++) {
             particleContainers[i].lifetime -= delta;
@@ -150,11 +135,47 @@ var ClientShip = function(startingState, playerId) {
         _.extend(state, updateState);
 
         if (updateState.sunk) {
-            sinkTimer = 1000;
+            sinkTimer = 2000;
         }
 
         console.log(state);
         updateState = null;
+    }
+
+    // Call this when this ship will no longer be ticked.
+    this.removeSprites = function() {
+        stage.removeChild(shipStructureSprite);
+        stage.removeChild(shadowSprite);
+        stage.removeChild(shipSprite);
+        stage.removeChild(cannonSprite);
+    }
+
+    function interpolateSinking(delta) {
+        var delay = 1000; // time before sinking animation starts.
+        sinkTimer -= delta;
+
+        if (sinkTimer > 0 && sinkTimer < delay) {
+            var t = sinkTimer;
+            var rot = shipSprite.rotation + .0002 * delta
+            , alpha = Math.min(1, .3 + t / 1000)
+            , scale = .9 + .1 * (t / 1000)
+            ;
+
+            shipSprite.rotation = rot;
+            shipSprite.alpha = alpha;
+            shipSprite.scale.set(scale, scale);
+
+            shipStructureSprite.rotation = rot;
+            shipStructureSprite.alpha = alpha;
+            shipStructureSprite.scale.set(scale, scale);
+
+            shadowSprite.rotation = rot;
+            shadowSprite.alpha = alpha;
+            shadowSprite.scale.set(scale, scale);
+
+            cannonSprite.alpha = alpha;
+            cannonSprite.scale.set(scale, scale);
+        }
     }
 
     function applyDestructionMask() {
