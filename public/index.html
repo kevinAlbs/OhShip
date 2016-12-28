@@ -1,15 +1,257 @@
-<!DOCTYPE html>
-<html>
-  <head>
-    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0"/> <!--320-->
-  </head>
+<!doctype html>
 
-  <body>
-    <div id="game"></div>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
 
-    <script src="/socket.io/socket.io.js"></script>
-    <!-- Phaser does not play well with RequireJS atm, so including it manually -->
-    <script src="js/vendor/phaser.js"></script>
-    <script data-main="js/main" src="js/vendor/require.js"></script>
-  </body>
+    <title>Ships</title>
+    <meta name="description" content="">
+    <meta name="author" content="Kevin Albertson">
+
+    <style type="text/css">
+        #container {
+            width: 800px;
+            margin: 0px auto;
+        }
+        #controls {
+            width: 100%;
+        }
+        #controls [data-panel=play], #controls [data-panel=respawn] {
+            text-align: center;
+        }
+        #controls section {
+            background: #EEE;
+            border: 1px black solid;
+            display: none;
+        }
+
+        #controls[data-showing=play] [data-panel=play],
+        #controls[data-showing=controls] [data-panel=controls],
+        #controls[data-showing=respawn] [data-panel=respawn] {
+            display: block;
+        }
+    </style>
+
+    <!--[if lt IE 9]>
+    <script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+</head>
+
+<body>
+    <div id="container">
+        <div id='game'></div>
+        <div id='controls' data-showing='play'>
+            <section data-panel='play'>
+                <small>play</small>
+                <div>
+                    <input type='text' id='play-nick' placeholder='Enter nickname (optional)' />
+                </div>
+                <button id='play-btn'>Play</button>
+            </section>
+            <section data-panel='controls'>
+                <small>controls</small><br/>
+                TODO
+            </section>
+            <section data-panel='respawn'>
+                <small>respawn</small><br/>
+                <button id='respawn-btn'>Respawn</button>
+            </section>
+        </div>
+        <div id='debug-controls'></div>
+    </div>
+
+    <script src="/client_message.js"></script>
+    <script src="/server_response.js"></script>
+    <script src="/config.js"></script>
+    <script src='/js/vendor/underscore.js'></script>
+    <script src='/js/vendor/pixi.js'></script>
+    <script src='/js/particle_emitter.js'></script>
+    <script src='/js/client_ship.js'></script>
+    <script src='/js/client_cannonball.js'></script>
+    <script src='/js/ui.js'></script>
+
+    <script>
+        // Constants.
+        var kFixedDelta = 60
+            kMaxDelta = 500
+            ;
+
+        // Utility functions.
+        function bound(x, min, max) { return Math.min(Math.max(x, min), max); }
+
+        var playerMap = new Map()
+            , playerId = null
+            , cannonballs = []
+            , ws = new WebSocket('ws://localhost:4080')
+            , stage = new PIXI.Container()
+            , renderer = PIXI.autoDetectRenderer(800, 400)
+            , serverResponseBuffer = []
+            , prevTime = 0
+            ;
+
+        ws.addEventListener('message', onServerResponse);
+
+        function tick() {
+            var currentTime = Date.now();
+            var delta = currentTime - prevTime;
+            prevTime = currentTime;
+            if (delta > kMaxDelta) {
+                window.requestAnimationFrame(tick);
+                return;
+            }
+
+            // Apply pending updates from server.
+            while(serverResponseBuffer.length > 0) {
+                applyServerResponse(serverResponseBuffer.shift());
+            }
+
+            // Interpolate.
+            playerMap.forEach(function(player, id) {
+                var ship = player.ship;
+                if (ship) {
+                    ship.tick(delta);
+                    if (ship.isFinishedSinking()) {
+                        ship.removeSprites();
+                        player.ship = null;
+                        if (player.id == playerId) {
+                            // Update UI.
+                            UI.setScreen('respawn');
+                        }
+                    }
+                    var shipState = ship.getState();
+                    var sX = shipState.x, sY = shipState.y;
+                    // Check for collisions. TODO: make more efficient using sorting or quad tree.
+                    cannonballs.forEach(function(cannonball) {
+                        var cannonballState = cannonball.getState();
+                        var cX = cannonballState.x, cY = cannonballState.y;
+                        if (cannonball.getPlayerId() != id && Math.pow(sX - cX, 2) + Math.pow(sY - cY, 2) <= Math.pow(90, 2)) {
+                            ship.handleCollision(cX, cY);
+                        }
+                    })
+                }
+            });
+
+            cannonballs = cannonballs.filter(function(cannonball) {
+                cannonball.tick(delta);
+                return !cannonball.isSunk();
+            });
+
+            if (ClientShip.particleEmitter) {
+                ClientShip.particleEmitter.tick(delta);
+            }
+
+            // Center stage if we have a ship.
+            var myPlayer = playerMap.get(playerId);
+            var myShip = myPlayer ? myPlayer.ship : null;
+            if (myShip) {
+                var state = myShip.getState();
+                stage.position.set(
+                    bound(renderer.width / 2 - state.x, -GameConfig.worldWidth + renderer.width, 0),
+                    bound(renderer.height / 2 - state.y, -GameConfig.worldHeight + renderer.height, 0)
+                    );
+            }
+            renderer.render(stage);
+            window.requestAnimationFrame(tick);
+        }
+        
+        function onServerResponse(raw) {
+            var jsonObj = ServerResponse.decode(raw.data);
+            console.log('Recieved from server', jsonObj);
+            serverResponseBuffer.push(jsonObj);
+        }
+
+        // Called at the beginning of the frame.
+        function applyServerResponse(jsonObj) {
+            console.log('Applying', jsonObj);
+            var id = jsonObj.id;
+            var player = playerMap.has(id) ? playerMap.get(id) : null;
+            var ship = player ? player.ship : null;
+            switch (jsonObj.type) {
+                case ServerResponse.type.kWelcome:
+                    playerId = id;
+                    break;
+                case ServerResponse.type.kSpawn:
+                    if (!player) return;
+                    if (player.ship) {
+                        // Remove sprites, this can occur if the other player spawns before the sinking animation finisheds.
+                        player.ship.removeSprites();
+                    }
+                    player.ship = new ClientShip(jsonObj.data, id);
+                    break;
+                case ServerResponse.type.kJoin:
+                    if (player) return;
+                    playerMap.set(id, jsonObj);
+                    break;
+                case ServerResponse.type.kRefresh:
+                    // TODO: clear all ships first
+                    jsonObj.data.forEach(function(playerData) {
+                        if (playerMap.has(playerData.id)) return;
+                        var player = {
+                            id: playerData.id
+                        };
+                        if (playerData.hasOwnProperty('ship')) {
+                            player.ship = new ClientShip(playerData.ship, playerData.id);
+                        }
+                        playerMap.set(playerData.id, player);
+                    });
+                    break;
+                case ServerResponse.type.kShipUpdate:
+                    if (!player || !ship) return;
+                    ship.applyServerUpdate(jsonObj);
+                    break;
+                case ServerResponse.type.kCannonFire:
+                    if (!player || !ship) return;
+                    var cannonball = ship.attemptCannonFire(jsonObj.data);
+                    if (cannonball) cannonballs.push(cannonball);
+                    break;
+                case ServerResponse.type.kBufferedUpdates:
+                    jsonObj.data.forEach(function(message){
+                        applyServerResponse(message);
+                    });
+                    break;
+                case ServerResponse.type.kError:
+                    if (jsonObj.data.maxReached);
+                    alert(jsonObj.data.message);
+                    break;
+            }
+        }
+
+        function sendJson(jsonObj) {
+            ws.send(ClientMessage.encode(jsonObj));
+        }
+        
+        function play(nickname) {
+            console.log("Using nickname " + nickname);
+            var msg = {type: ClientMessage.type.kJoin};
+            if (nickname) msg.nickname = nickname;
+            sendJson(msg);
+        }
+
+        function start() {
+            renderer.backgroundColor = 0x4b84f8;
+            stage.addChild(new PIXI.extras.TilingSprite(PIXI.loader.resources.water.texture, 10000, 10000));
+            document.getElementById('game').appendChild(renderer.view);
+            UI.init();
+            tick();
+        }
+
+        function respawn() {
+            sendJson({
+                type: ClientMessage.type.kSpawn
+            });
+        }
+
+        // Preload all resources and start.
+        PIXI.loader.add("ship", "img/ship.png")
+            .add("cannonball", "img/cannonball.png")
+            .add("cannon", "img/cannon.png")
+            .add("shipStructure", "img/ship-structure.png")
+            .add("water", "img/water.png")
+            .add("engine", "img/engine.png")
+            .load();
+        PIXI.loader.once("complete", start);
+
+    </script>
+
+</body>
 </html>
