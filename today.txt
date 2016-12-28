@@ -1,26 +1,12 @@
-[3 hours]
-- [2 hours] User interface
-    + Add username and score
-- [1 hour] Visual effects
-    + Fix death animation and remove from display list
-    + Engine animation
-    + Avoid particles and masks for offscreen ships
-
-[4.5 hours expected]
-- Game logic
-    + [1 hour] Boundaries with reasonable spawning [done?, about 1.5 hr]
-    + [30 minutes] Properly handle leave on client [doneish, about .5 hr]
-	+ [30 minutes] Restrict cannon movement to 2^n positions [done, about .25 hr]
-	+ [30 minutes] Cap the number of players that can connect [done, about .25 hr]
-    + [30 minutes] Share coordinates of cannonball instead of when a fire occurs. [done, about .25 hr]
-	+ [1 hour] Interpolate errors smoothly [done, about .75 hr]
-    + [1 hour] Stupid simple AI (near random movement, fire when near)
-    
-
-[3 hours]
-- Polishing and bug fixes
+NECESSARY
+- Rate limit number of cannonballs
+- Fix client cannon (sometimes does not move)
+- Stupid simple AI (near random movement, fire when near)
+- Add username and score
+- Sanitize input
+- Avoid particles and masks for offscreen ships
+- Test with 75-100 players
 - Put everything in spritesheet
-- Sanitize input!
 
 OPTIONAL
 - Add nickname on board

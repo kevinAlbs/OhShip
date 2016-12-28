@@ -9,12 +9,20 @@
     <meta name="author" content="Kevin Albertson">
 
     <style type="text/css">
+        * {
+            margin: 0px;
+            padding: 0px;
+        }
         #container {
             width: 800px;
             margin: 0px auto;
         }
         #controls {
             width: 100%;
+        }
+        #controls h1 {
+            font-size: 14px;
+            font-weight: normal;
         }
         #controls [data-panel=play], #controls [data-panel=respawn] {
             text-align: center;
@@ -23,12 +31,23 @@
             background: #EEE;
             border: 1px black solid;
             display: none;
+            padding: 10px;
         }
-
         #controls[data-showing=play] [data-panel=play],
         #controls[data-showing=controls] [data-panel=controls],
         #controls[data-showing=respawn] [data-panel=respawn] {
             display: block;
+        }
+        #controls [data-panel=controls] .row {
+            margin: 10px 0px;
+        }
+        .key {
+            background-color: rgb(0,0,0);
+            color: #FFF;
+            border-radius: 4px;
+            padding: 2px 3px;
+            font-family: 'courier new';
+            display: inline-block;
         }
     </style>
 
@@ -42,18 +61,30 @@
         <div id='game'></div>
         <div id='controls' data-showing='play'>
             <section data-panel='play'>
-                <small>play</small>
-                <div>
-                    <input type='text' id='play-nick' placeholder='Enter nickname (optional)' />
-                </div>
+                <h1>play</h1>
+                <input type='text' id='play-nick' placeholder='Enter nickname (optional)' />
                 <button id='play-btn'>Play</button>
             </section>
             <section data-panel='controls'>
-                <small>controls</small><br/>
-                TODO
+                <h1>controls</h1>
+                <div class="row">
+                    <b>Left Engine</b> Forward: <span class='key' data-key='q'>Q</span> Reverse: <span class='key' data-key='shiftq'>Shift</span>+<span class='key' data-key='shiftq'>Q</span>
+                </div>
+
+                <div class="row">
+                    <b>Right Engine</b> Forward: <span class='key' data-key='w'>W</span> Reverse: <span class='key' data-key='shiftw'>Shift</span>+<span class='key' data-key='shiftw'>W</span>
+                </div>
+                
+                <div class="row">
+                    <b>Cannon</b> Clockwise: <span class='key' data-key='p'>P</span> Counter-clockwise: <span class='key' data-key='shiftp'>Shift</span>+<span class='key' data-key='shiftp'>P</span>
+                </div>
+
+                <div class="row">
+                    <b>Fire Cannon</b> <span class='key' data-key='spacebar'>Spacebar</span>
+                </div>
             </section>
             <section data-panel='respawn'>
-                <small>respawn</small><br/>
+                <h1>respawn</h1>
                 <button id='respawn-btn'>Respawn</button>
             </section>
         </div>
@@ -150,7 +181,11 @@
                     bound(renderer.height / 2 - state.y, -GameConfig.worldHeight + renderer.height, 0)
                     );
             }
+
+            UI.tick(delta);
+
             renderer.render(stage);
+
             window.requestAnimationFrame(tick);
         }
         

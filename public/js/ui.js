@@ -18,13 +18,38 @@ var UI = (function(){
     }
 
     function onKeyUp(e) {
-        console.log(e);
         // Only accept keyboard input for controls screen.
         if (controls.getAttribute('data-showing') !== 'controls') return;
         if (keyMap.hasOwnProperty(e.keyCode)) {
             console.log("Forwarding key up event");
             keyMap[e.keyCode](e.shiftKey);
         }
+    }
+
+    function tick(delta) {
+        // Animate any keys necessary.
+        for (keyId in animatedKeys) {
+            if (!animatedKeys.hasOwnProperty(keyId)) continue;
+            var ratio = animatedKeys[keyId].timeLeft / kKeyFadeTime;
+            var b = Math.floor(Math.max(0, 255 * ratio));
+            var els = animatedKeys[keyId].els;
+            for (var i = 0; i < els.length; i++) {
+                els[i].style.backgroundColor = "rgb(0," + b + "," + b + ")";
+            }
+            if (animatedKeys[keyId].timeLeft <= 0) {
+                delete animatedKeys[keyId];
+            } else {
+                animatedKeys[keyId].timeLeft -= delta;
+            }
+        }
+    }
+
+    function animateKey(keyLetter, shiftPressed) {
+        var keyId = (shiftPressed ? 'shift' : '') + keyLetter;
+        animatedKeys[keyId] = {
+            timeLeft: kKeyFadeTime,
+            els: document.querySelectorAll('[data-key=' + keyId + ']')
+        };
     }
 
     function init() {
@@ -46,6 +71,7 @@ var UI = (function(){
                 type: ClientMessage.type.kShipUpdate,
                 leftEngine: currentState.leftEngine
             });
+            animateKey("q", shift);
         };
         keyMap[keyCodes.W] = function(shift) {
             var increment = shift ? (-1/7) : (1/7);
@@ -54,6 +80,7 @@ var UI = (function(){
                 type: ClientMessage.type.kShipUpdate,
                 rightEngine: currentState.rightEngine
             });
+            animateKey("w", shift);
         };
         keyMap[keyCodes.P] = function(shift) {
             var increment = shift ? -1 : 1;
@@ -64,11 +91,13 @@ var UI = (function(){
                 type: ClientMessage.type.kShipUpdate,
                 cannonRotation: currentState.cannonRotation
             });
+            animateKey("p", shift);
         };
         keyMap[keyCodes.SPACE] = function() {
             sendJson({
                 type: ClientMessage.type.kCannonFire
             });
+            animateKey("spacebar", false);
         };
     }
 
@@ -86,10 +115,13 @@ var UI = (function(){
         cannonRotation: 0
     }
     , keyMap = {} // Maps keycodes to handler functions
+    , animatedKeys = {} // Maps key ids to currently animated keys
+    , kKeyFadeTime = 250
     ;
 
     return {
         init: init,
-        setScreen: setScreen
+        setScreen: setScreen,
+        tick: tick
     };
 }());
