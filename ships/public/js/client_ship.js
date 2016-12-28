@@ -132,6 +132,41 @@ var ClientShip = function(startingState, playerId) {
         }
     }
 
+    function tickEngines(delta) {
+        function shouldTick(val, timer) {
+            if (val == 0) return false;
+            var maxTime = 300, minTime = 30;
+            var timeToChange = (maxTime - minTime) * (1 - Math.abs(val)) + minTime;
+            if (timer >= timeToChange) {
+                return true;
+            }
+            return false;
+        }
+
+        if (shouldTick(state.leftEngine, leftEngineTimer)) {
+            var dir = state.leftEngine > 0 ? -1 : 1;
+            var next = leftEngineFrame + dir;
+            if (next < 0) next = 7;
+            else if (next > 7) next = 0;
+            leftEngineSprite.gotoAndStop(next);
+            leftEngineFrame = next;
+            leftEngineTimer = 0;
+        }
+
+        if (shouldTick(state.rightEngine, rightEngineTimer)) {
+            var dir = state.rightEngine > 0 ? 1 : -1;
+            var next = rightEngineFrame + dir;
+            if (next < 0) next = 7;
+            else if (next > 7) next = 0;
+            rightEngineSprite.gotoAndStop(next);
+            rightEngineFrame = next;
+            rightEngineTimer = 0;
+        }
+
+        leftEngineTimer += delta;
+        rightEngineTimer += delta;
+    }
+
     // Interpolates current state for one frame.
     this.tick = function(delta) {
         updateStateIfNecessary();
@@ -161,6 +196,8 @@ var ClientShip = function(startingState, playerId) {
 
         cannonSprite.position.set(state.x, state.y);
         cannonSprite.rotation = state.cannonRotation * 2 * Math.PI / 8;
+
+        tickEngines(delta);
     };
 
     function updateStateIfNecessary() {
@@ -266,11 +303,30 @@ var ClientShip = function(startingState, playerId) {
     cannonSprite.anchor.set(.3, .5);
     cannonSprite.rotation = state.cannonRotation;
 
+
+    var engineFrames = [];
+    for (var i = 0; i < 8; i++) {
+        engineFrames.push(new PIXI.Texture(PIXI.loader.resources.engine.texture, new PIXI.Rectangle(i * 24, 0, 24, 24)));
+    }
+    var leftEngineSprite = new PIXI.extras.AnimatedSprite(engineFrames);
+    var rightEngineSprite = new PIXI.extras.AnimatedSprite(engineFrames);
+
+    var leftEngineTimer = 0, rightEngineTimer = 0;
+    var leftEngineFrame = 0, rightEngineFrame = 0;
+
+    leftEngineSprite.anchor.set(.5, .5);
+    rightEngineSprite.anchor.set(.5, .5);
+
+    leftEngineSprite.position.set(-18, 46);
+    rightEngineSprite.position.set(18, 46);
+
     stage.addChild(shadowSprite);
     stage.addChild(shipStructureSprite);
     stage.addChild(shipSprite);
     stage.addChild(cannonSprite);
     
+    shipStructureSprite.addChild(leftEngineSprite);
+    shipStructureSprite.addChild(rightEngineSprite);
 
     // Add the destruction mask, which will be temporarily stored as a graphic for easy updating
     // but needs to be converted to a sprite for application, which needs to be updated on change.

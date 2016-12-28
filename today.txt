@@ -19,18 +19,13 @@
 
 [3 hours]
 - Polishing and bug fixes
+- Put everything in spritesheet
 - Sanitize input!
 
 OPTIONAL
-<<<<<<< HEAD
-<<<<<<< HEAD
+- Add nickname on board
 - Enforce uniqueness among nicknames
-=======
-- Are messages applied in the right order on the client? I was getting weird issues with cannonballs before, where the cannonball would incorrectly fire the direction of the cannon before rotation.
->>>>>>> Have cannonball message pass angle
-=======
 - Are messages applied in the right order on the client? I was getting weird issues with cannonballs before, where the cannonball would incorrectly fire the direction of the cannon before rotation. ACTUALLY, it is likely because state update is deferred in client ship. Is this a good idea?
->>>>>>> Interpolate error on client
 - Server tests
 - Client tests
 - Boundary graphics
