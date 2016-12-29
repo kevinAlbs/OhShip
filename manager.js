@@ -23,7 +23,7 @@ Messaging should be
 
         let _idCounter = 0
         , clientMap = new Map()
-        , game = new Game()
+        , game = new Game(idFactory)
         , bufferedClientMessages = []
         ;
 
@@ -38,6 +38,10 @@ Messaging should be
         function start() {
             wss.on('connection', _onConnect);
             _tick();
+        }
+
+        function idFactory() {
+            return _idCounter++;
         }
         
         function _tick() {
@@ -90,7 +94,7 @@ Messaging should be
                 ws.close();
                 return;
             }
-            ws.id = _idCounter++;
+            ws.id = idFactory();
             clientMap.set(ws.id, ws);
             console.log('Connection made ' + ws.id);
 
@@ -118,6 +122,22 @@ Messaging should be
         function _onError() {
             // TODO.
             console.log("Socket error: TODO");
+        }
+
+        function addAIPlayer() {
+            var aiId = idFactory();
+            bufferedClientMessages.push({
+                id: aiId,
+                type: ClientMessage.type.kJoin
+            });
+            bufferedClientMessages.push({
+               id: aiId,
+               type: ClientMessage.type.kSpawn 
+            });
+        }
+
+        function removeAIPlayer() {
+
         }
 
         return {
