@@ -41,7 +41,7 @@ function ClientCannonball(startingState, playerId) {
         return state;
     }
 
-    var cannonballSprite = new PIXI.Sprite(PIXI.Texture.fromImage('/img/cannonball.png'));
+    var cannonballSprite = new PIXI.Sprite(PIXI.Texture.fromFrame('cannonball.png'));
     cannonballSprite.anchor.set(.5, .5);
     cannonballSprite.rotation = state.angle;
     stage.addChild(cannonballSprite);

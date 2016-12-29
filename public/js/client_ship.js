@@ -294,27 +294,27 @@ var ClientShip = function(startingState, playerId, nickname) {
     var sinkTimer = 0;
 
     // Add all sprites for this ship.
-    var shipSprite = new PIXI.Sprite(PIXI.loader.resources.ship.texture);
+    var shipSprite = new PIXI.Sprite(PIXI.Texture.fromFrame('ship.png'));
     shipSprite.anchor.set(.5, .5);
     shipSprite.position.set(state.x, state.y);
     shipSprite.rotation = state.rotation;
 
-    var shipStructureSprite = new PIXI.Sprite(PIXI.loader.resources.shipStructure.texture);
+    var shipStructureSprite = new PIXI.Sprite(PIXI.Texture.fromFrame('ship-structure.png'));
     shipStructureSprite.anchor.set(.5, .5);
     shipStructureSprite.position.set(10, 10);
 
-    var shadowSprite = new PIXI.Sprite(PIXI.loader.resources.ship.texture);
+    var shadowSprite = new PIXI.Sprite(PIXI.Texture.fromFrame('ship.png'));
     shadowSprite.tint = 0x20160c;
     shadowSprite.anchor.set(.5, .5);
 
-    var cannonSprite = new PIXI.Sprite(PIXI.loader.resources.cannon.texture);
+    var cannonSprite = new PIXI.Sprite(PIXI.Texture.fromFrame('cannon.png'));
     cannonSprite.anchor.set(.3, .5);
     cannonSprite.rotation = state.cannonRotation;
 
 
     var engineFrames = [];
     for (var i = 0; i < 8; i++) {
-        engineFrames.push(new PIXI.Texture(PIXI.loader.resources.engine.texture, new PIXI.Rectangle(i * 24, 0, 24, 24)));
+        engineFrames.push(PIXI.Texture.fromFrame('engine' + i + '.png'));
     }
     var leftEngineSprite = new PIXI.extras.AnimatedSprite(engineFrames);
     var rightEngineSprite = new PIXI.extras.AnimatedSprite(engineFrames);
@@ -369,12 +369,7 @@ var ClientShip = function(startingState, playerId, nickname) {
     // Do not apply the mask yet as it is unnecessary until some destruction occurs.
 
     // Create a ship shared particle pool.
-    var pixel = new PIXI.Graphics();
-    // pixel.beginFill(0x000000);
-    pixel.beginFill(0x3f2e1c);
-    pixel.drawRect(0,0,2,2);
-    pixel.endFill();
-    ClientShip.particleEmitter = new ParticleEmitter(pixel.generateCanvasTexture());
+    ClientShip.particleEmitter = new ParticleEmitter(PIXI.Texture.fromFrame('particle.png'));
     ClientShip.particleEmitter.create(1000, {});
 
 };
@@ -389,7 +384,7 @@ ClientShip.getParticleField = function() {
         // http://pixijs.download/release/docs/PIXI.CanvasExtract.html
         // TODO: See if CanvasExtract can be used for cleanliness.
 
-        var shipSprite = new PIXI.Sprite(PIXI.loader.resources.ship.texture);
+        var shipSprite = new PIXI.Sprite(PIXI.Texture.fromFrame('ship.png'));
         var hw = Math.floor(shipSprite.width / 2), hh = Math.floor(shipSprite.height / 2);
         var renderer = new PIXI.CanvasRenderer(hw, hh);
         var particleField = new Uint32Array(hh);

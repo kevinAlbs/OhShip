@@ -264,8 +264,8 @@
         }
 
         function start() {
-            renderer.backgroundColor = 0x4b84f8;
-            stage.addChild(new PIXI.extras.TilingSprite(PIXI.loader.resources.water.texture, 10000, 10000));
+            // Add tiling background.
+            stage.addChild(new PIXI.extras.TilingSprite(PIXI.Texture.fromFrame('water.png'), GameConfig.worldWidth, GameConfig.worldHeight));
             document.getElementById('game').appendChild(renderer.view);
             UI.init();
             tick();
@@ -278,13 +278,7 @@
         }
 
         // Preload all resources and start.
-        PIXI.loader.add("ship", "img/ship.png")
-            .add("cannonball", "img/cannonball.png")
-            .add("cannon", "img/cannon.png")
-            .add("shipStructure", "img/ship-structure.png")
-            .add("water", "img/water.png")
-            .add("engine", "img/engine.png")
-            .load();
+        PIXI.loader.add('img/spritesheet.json').load();
         PIXI.loader.once("complete", start);
 
     </script>
