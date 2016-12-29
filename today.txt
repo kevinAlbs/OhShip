@@ -1,15 +1,12 @@
 NECESSARY
-
-EASY
-- Put everything in spritesheet
-- Add score
-
-NOT EASY
+- Full ship updates should update engine values too, since websocket messages may not get buffered when tab loses focus.
 - Stupid simple AI (near random movement, fire when near)
 - Avoid particles and masks for offscreen ships
 - Test with 75-100 players
 
 OPTIONAL
+- Add score
+- (For fun) see if draw calls drop with spritesheet
 - Enforce uniqueness among nicknames
 - Are messages applied in the right order on the client? I was getting weird issues with cannonballs before, where the cannonball would incorrectly fire the direction of the cannon before rotation. ACTUALLY, it is likely because state update is deferred in client ship. Is this a good idea?
 - Server tests

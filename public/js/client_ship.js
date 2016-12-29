@@ -397,7 +397,6 @@ ClientShip.getParticleField = function() {
         // of the border. TODO: why? Actually it seems like it favors the right side...
         shipSprite.scale.set(.47, .47);
         renderer.render(shipSprite);
-        document.body.appendChild(renderer.view);
         var imageData = renderer.view.getContext("2d").getImageData(0,0,hw,hh);
         for (var i = 0; i < hh; i++) {
             for (var j = 0; j < hw; j++) {
