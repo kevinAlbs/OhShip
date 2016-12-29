@@ -17,6 +17,7 @@
             sunk: false,
         }
         , currentCannonball = null
+        , updatedState = {}
         ;
 
         if (startingState) {
@@ -25,36 +26,35 @@
             }
         }
 
-        if (id % 2 == 0) {
-            state = {
-                x: 100,
-                y: 100,
-                rotation: 0,
-                leftEngine: 0,
-                rightEngine: 0,
-                cannonRotation: 0,
-                flagColor: 0x000000,
-                sunk: false
-            }
-        } else {
-            state = {
-                x: 300,
-                y: 100,
-                rotation: 0,
-                leftEngine: 0,
-                rightEngine: 0,
-                cannonRotation: 4,
-                flagColor: 0x000000,
-                sunk: false
-            }
-        }
+        // if (id % 2 == 0) {
+        //     state = {
+        //         x: 100,
+        //         y: 100,
+        //         rotation: 0,
+        //         leftEngine: 0,
+        //         rightEngine: 0,
+        //         cannonRotation: 0,
+        //         flagColor: 0x000000,
+        //         sunk: false
+        //     }
+        // } else {
+        //     state = {
+        //         x: 300,
+        //         y: 100,
+        //         rotation: 0,
+        //         leftEngine: 0,
+        //         rightEngine: 0,
+        //         cannonRotation: 4,
+        //         flagColor: 0x000000,
+        //         sunk: false
+        //     }
+        // }
         
 
         const MAX_FRAMES_WITHOUT_UPDATE = 100
         ;
 
-        let updateState = {}
-        , hasUpdated = false
+        let hasUpdated = false
         , framesSinceLastUpdate = 0
         ;
 
@@ -69,14 +69,14 @@
                 let val = cleanEngineVal(json.leftEngine);
                 state.leftEngine = val;
                 hasUpdated = true;
-                updateState.leftEngine = val;
+                updatedState.leftEngine = val;
             }
 
             if (json.hasOwnProperty('rightEngine')) {
                 let val = cleanEngineVal(json.rightEngine);
                 state.rightEngine = val;
                 hasUpdated = true;
-                updateState.rightEngine = val;
+                updatedState.rightEngine = val;
             }
 
             if (json.hasOwnProperty('cannonRotation')) {
@@ -84,7 +84,7 @@
                 hasUpdated = true;
                 let cleanedRotation = parseInt(json.cannonRotation);
                 if (isNaN(cleanedRotation) || cleanedRotation < 0 || cleanedRotation > 7) cleanedRotation = 0;
-                updateState.cannonRotation = cleanedRotation;
+                updatedState.cannonRotation = cleanedRotation;
             }
         };
 
@@ -127,23 +127,32 @@
             state.x = Math.min(state.x, GameConfig.worldWidth);
             state.y = Math.max(0, state.y);
             state.y = Math.min(state.y, GameConfig.worldHeight);
+            framesSinceLastUpdate++;
 
-            if (hasUpdated || framesSinceLastUpdate >= MAX_FRAMES_WITHOUT_UPDATE) {
-                // Add interpolated properties.
-                updateState.x = state.x;
-                updateState.y = state.y;
-                updateState.rotation = state.rotation;
-                let temp = updateState;
-                updateState = {};
+            var updatedStateCopy = updatedState;
+
+            // We send a full update every MAX_FRAMES_WITHOUT_UPDATE regardless of
+            // whether the ship has changed state, since clients may lose messages.
+            if (framesSinceLastUpdate >= MAX_FRAMES_WITHOUT_UPDATE) {
+                // Send a full state update.
                 hasUpdated = false;
                 framesSinceLastUpdate = 0;
+                updatedState = {};
                 return {
                     id: id,
                     type: ServerResponse.type.kShipUpdate,
-                    data: temp
+                    data: state
+                };
+            } else if (hasUpdated) {
+                // Send only state which has updated
+                hasUpdated = false;
+                updatedState = {};
+                return {
+                    id: id,
+                    type: ServerResponse.type.kShipUpdate,
+                    data: state
                 };
             } else {
-                framesSinceLastUpdate++;
                 return null;
             }
         }
