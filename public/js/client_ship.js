@@ -85,6 +85,9 @@ var ClientShip = function(startingState, playerId, nickname) {
 
         // Lifetime of particle container *must* be greater than the max lifetime of containing
         // particles.
+        // TODO: this invariant is not maintained if the particle containers are removed during
+        // sinking when the particles are still alive. Ownership should be handed off to particle
+        // emitter.
         particleContainers.push({container: particleContainer, lifetime: 2000});
     }
 

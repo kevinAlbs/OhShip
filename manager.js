@@ -18,7 +18,7 @@ Messaging should be
     // Responsible for managing client connections and forwarded decoded messages to/from game.
     function Manager(wss) {
         'use strict';
-        const kMaxConnections = 5
+        const kMaxConnections = 30
         , kFixedDelta = 100
         ;
 
@@ -47,7 +47,11 @@ Messaging should be
         }
         
         function _tick() {
-            if (_idCounter < 10) addAIPlayer();
+            var totalPlayers = aiPlayerMap.size + clientMap.size;
+            // Maintain at least 15 players.
+            if (totalPlayers < 15) addAIPlayer();
+            else if (totalPlayers > 15 && aiPlayerMap.size > 0) removeAIPlayer();
+
             let startTime = Date.now();
 
             // Have all AI players act.
@@ -137,6 +141,7 @@ Messaging should be
         }
 
         function addAIPlayer() {
+            console.log('adding ai player');
             var aiId = idFactory();
             bufferedClientMessages.push({
                 id: aiId,
@@ -149,11 +154,15 @@ Messaging should be
             aiPlayerMap.set(aiId, new StupidAI(aiId));
         }
 
-        function removeAIPlayer(aiId) {
+        function removeAIPlayer() {
+            if (aiPlayerMap.size == 0) return;
+            let aiId = aiPlayerMap.keys().next().value;
+            console.log("removing AI player " + aiId);
             bufferedClientMessages.push({
                id: aiId,
                type: ClientMessage.type.kLeave 
             });
+            aiPlayerMap.delete(aiId);
         }
 
         return {
