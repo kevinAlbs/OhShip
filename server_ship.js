@@ -15,7 +15,9 @@
             cannonRotation: 0, // 0-7, integer
             flagColor: 0x000000,
             sunk: false,
-        };
+        }
+        , currentCannonball = null
+        ;
 
         if (startingState) {
             for (var prop in startingState) {
@@ -79,12 +81,14 @@
         };
 
         this.attemptCannonFire = function() {
+            if (currentCannonball && !currentCannonball.isSunk()) return null;
             console.log("Firing cannon!");
-            return new ServerCannonball({
+            currentCannonball = new ServerCannonball({
                 x: state.x,
                 y: state.y,
                 angle: state.cannonRotation
             }, id);
+            return currentCannonball;
         }
 
         this.sink = function() {

@@ -1,6 +1,7 @@
-var ClientShip = function(startingState, playerId) {
+var ClientShip = function(startingState, playerId, nickname) {
     // Called when ship state update is recieved from server.
     this.applyServerUpdate = function(json) {
+        console.log("Ship update ", json.data);
         updateState = json.data;
     }
 
@@ -197,15 +198,18 @@ var ClientShip = function(startingState, playerId) {
         cannonSprite.position.set(state.x, state.y);
         cannonSprite.rotation = state.cannonRotation * 2 * Math.PI / 8;
 
+        nicknameBox.position.set(state.x - nicknameBox.width / 2, state.y + 78);
+
         tickEngines(delta);
     };
 
     function updateStateIfNecessary() {
         if (!updateState) return;
         // Only directly copy over the engine values to the directly used state.
-        if (updateState.leftEngine) state.leftEngine = updateState.leftEngine;
-        if (updateState.rightEngine) state.rightEngine = updateState.rightEngine;
-        if (updateState.cannonRotation) state.cannonRotation = updateState.cannonRotation;
+        if (updateState.hasOwnProperty('leftEngine')) state.leftEngine = updateState.leftEngine;
+        if (updateState.hasOwnProperty('rightEngine')) state.rightEngine = updateState.rightEngine;
+        if (updateState.hasOwnProperty('cannonRotation')) state.cannonRotation = updateState.cannonRotation;
+        if (updateState.hasOwnProperty('sunk')) state.sunk = updateState.sunk;
         // The target state however, will store the most accurate representation.
         _.extend(targetState, updateState);
 
@@ -222,6 +226,10 @@ var ClientShip = function(startingState, playerId) {
         stage.removeChild(shadowSprite);
         stage.removeChild(shipSprite);
         stage.removeChild(cannonSprite);
+        stage.removeChild(nicknameBox);
+        particleContainers.forEach(function(particleContainer){
+            stage.removeChild(particleContainer.container);
+        });
     }
 
     function interpolateSinking(delta) {
@@ -327,6 +335,18 @@ var ClientShip = function(startingState, playerId) {
     
     shipStructureSprite.addChild(leftEngineSprite);
     shipStructureSprite.addChild(rightEngineSprite);
+
+    // Add label for nickname
+    var nicknameLbl = new PIXI.Text(nickname, {fontFamily: "Courier New", fontSize: 12, fill: 0x000000});
+    var lblRect = nicknameLbl.getBounds();
+    lblRect.pad(2,5);
+
+    var nicknameBox = new PIXI.Graphics();
+    nicknameBox.beginFill(0xFFFFFF, .5);
+    nicknameBox.drawShape(lblRect);
+    nicknameBox.endFill();
+    nicknameBox.addChild(nicknameLbl);
+    stage.addChild(nicknameBox);
 
     // Add the destruction mask, which will be temporarily stored as a graphic for easy updating
     // but needs to be converted to a sprite for application, which needs to be updated on change.

@@ -1,12 +1,17 @@
 NECESSARY
-- Rate limit number of cannonballs
-- Fix client cannon (sometimes does not move)
-- Stupid simple AI (near random movement, fire when near)
-- Add username and score
+
+EASY
+x Rate limit number of cannonballs
+x Fix client cannon (sometimes does not move)
+x Add username
 - Sanitize input
+- Put everything in spritesheet
+- Add score
+
+NOT EASY
+- Stupid simple AI (near random movement, fire when near)
 - Avoid particles and masks for offscreen ships
 - Test with 75-100 players
-- Put everything in spritesheet
 
 OPTIONAL
 - Add nickname on board

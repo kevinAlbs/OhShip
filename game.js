@@ -63,13 +63,13 @@
                     if (playerMap.has(id)) return; // TODO: errors.
                     playerMap.set(id, {
                         ship: null,
-                        nickname: json.nickname
+                        nickname: nick
                     });
                     playersRequestingRefresh.push(id);
                     pendingServerUpdates.push({
                         id: id,
                         type: ServerResponse.type.kJoin,
-                        nickname: json.nickname
+                        nickname: nick
                     });
                     _spawn(id);
                     break;
@@ -89,13 +89,14 @@
                     if (!ship) return;
                     let cannonball = ship.attemptCannonFire();
                     if (cannonball) {
-                        cannonballs.push(cannonball);    
+                        cannonballs.push(cannonball);
+                        pendingServerUpdates.push({
+                            id: id,
+                            type: ServerResponse.type.kCannonFire,
+                            data: cannonball.getState() // Include starting coordinates and rotation.
+                        });
                     }
-                    pendingServerUpdates.push({
-                        id: id,
-                        type: ServerResponse.type.kCannonFire,
-                        data: cannonball.getState() // Include starting coordinates and rotation.
-                    });
+                    
                     break;
                 case ClientMessage.type.kSetNickname:
                 case ClientMessage.type.kRequestRefresh:

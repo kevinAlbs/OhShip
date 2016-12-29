@@ -191,13 +191,13 @@
         
         function onServerResponse(raw) {
             var jsonObj = ServerResponse.decode(raw.data);
-            console.log('Recieved from server', jsonObj);
+            //console.log('Recieved from server', jsonObj);
             serverResponseBuffer.push(jsonObj);
         }
 
         // Called at the beginning of the frame.
         function applyServerResponse(jsonObj) {
-            console.log('Applying', jsonObj);
+            //console.log('Applying', jsonObj);
             var id = jsonObj.id;
             var player = playerMap.has(id) ? playerMap.get(id) : null;
             var ship = player ? player.ship : null;
@@ -207,11 +207,11 @@
                     break;
                 case ServerResponse.type.kSpawn:
                     if (!player) return;
-                    if (player.ship) {
-                        // Remove sprites, this can occur if the other player spawns before the sinking animation finisheds.
-                        player.ship.removeSprites();
-                    }
-                    player.ship = new ClientShip(jsonObj.data, id);
+                    console.log("Nick is ", player.nickname);
+                    console.log(player);
+                    // Remove sprites if the player spawns before the sinking animation finished.
+                    if (player.ship) player.ship.removeSprites();
+                    player.ship = new ClientShip(jsonObj.data, id, player.nickname);
                     break;
                 case ServerResponse.type.kJoin:
                     if (player) return;
@@ -219,13 +219,15 @@
                     break;
                 case ServerResponse.type.kRefresh:
                     // TODO: clear all ships first
+                    console.log("kRefresh");
                     jsonObj.data.forEach(function(playerData) {
                         if (playerMap.has(playerData.id)) return;
                         var player = {
-                            id: playerData.id
+                            id: playerData.id,
+                            nickname: playerData.nickname
                         };
                         if (playerData.hasOwnProperty('ship')) {
-                            player.ship = new ClientShip(playerData.ship, playerData.id);
+                            player.ship = new ClientShip(playerData.ship, playerData.id, playerData.nickname);
                         }
                         playerMap.set(playerData.id, player);
                     });
@@ -245,7 +247,7 @@
                     });
                     break;
                 case ServerResponse.type.kError:
-                    if (jsonObj.data.maxReached);
+                    if (jsonObj.data.maxReached)
                     alert(jsonObj.data.message);
                     break;
             }
@@ -256,7 +258,6 @@
         }
         
         function play(nickname) {
-            console.log("Using nickname " + nickname);
             var msg = {type: ClientMessage.type.kJoin};
             if (nickname) msg.nickname = nickname;
             sendJson(msg);
