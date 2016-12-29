@@ -59,23 +59,31 @@
         ;
 
         this.applyClientMessage = function(json) {
+            function cleanEngineVal(val) {
+                if (typeof val !== 'number') return 0;
+                if (isNaN(val) || val < -1 || val > 1) return 0;
+                return val;
+            }
+
             if (json.hasOwnProperty('leftEngine')) {
-                state.leftEngine = json.leftEngine;
+                let val = cleanEngineVal(json.leftEngine);
+                state.leftEngine = val;
                 hasUpdated = true;
-                updateState.leftEngine = json.leftEngine;
+                updateState.leftEngine = val;
             }
 
             if (json.hasOwnProperty('rightEngine')) {
-                state.rightEngine = json.rightEngine;
+                let val = cleanEngineVal(json.rightEngine);
+                state.rightEngine = val;
                 hasUpdated = true;
-                updateState.rightEngine = json.rightEngine;
+                updateState.rightEngine = val;
             }
 
             if (json.hasOwnProperty('cannonRotation')) {
                 state.cannonRotation = json.cannonRotation;
                 hasUpdated = true;
-                var cleanedRotation = parseInt(json.cannonRotation);
-                if (cleanedRotation < 0 || cleanedRotation > 7) cleanedRotation = 0;
+                let cleanedRotation = parseInt(json.cannonRotation);
+                if (isNaN(cleanedRotation) || cleanedRotation < 0 || cleanedRotation > 7) cleanedRotation = 0;
                 updateState.cannonRotation = cleanedRotation;
             }
         };

@@ -1,9 +1,6 @@
 NECESSARY
 
 EASY
-x Rate limit number of cannonballs
-x Fix client cannon (sometimes does not move)
-x Add username
 - Sanitize input
 - Put everything in spritesheet
 - Add score
