@@ -1,7 +1,6 @@
 var ClientShip = function(startingState, playerId, nickname) {
     // Called when ship state update is recieved from server.
     this.applyServerUpdate = function(json) {
-        console.log("Ship update ", json.data);
         updateState = json.data;
     }
 
@@ -49,11 +48,13 @@ var ClientShip = function(startingState, playerId, nickname) {
         var globalPoint = new PIXI.Point(x,y);
         // TODO: is it bad to use stage without explicitly passing?
         var localPoint = shipSprite.toLocal(globalPoint, stage);
-        console.log(localPoint);
         destructionMaskGraphic.beginFill(0x000000);
         destructionMaskGraphic.drawCircle(localPoint.x + hw, localPoint.y + hh, 5);
         destructionMaskGraphic.endFill();
         applyDestructionMask();
+
+        // Only add particles if on screen.
+        if (!isOnScreen(state.x, state.y, GameConfig.shipRadius)) return;
 
         // Get bounding box.
         var boxW = 10, boxH = 10;
@@ -75,7 +76,6 @@ var ClientShip = function(startingState, playerId, nickname) {
                 var localY = localPoint.y + particleContainerY;
                 if (this.checkAndSetParticleField(localX, localY)) {
                     // Emit.
-                    console.log("Emitting");
                     ClientShip.particleEmitter.emit(
                         particleContainer, particleContainerX, particleContainerY, {explode: true});
                 }

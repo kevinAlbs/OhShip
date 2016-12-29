@@ -104,7 +104,9 @@
     <script>
         // Constants.
         var kFixedDelta = 60
-            kMaxDelta = 500
+            , kMaxDelta = 500
+            , kWidth = 800
+            , kHeight = 600
             ;
 
         // Utility functions.
@@ -121,6 +123,11 @@
             ;
 
         ws.addEventListener('message', onServerResponse);
+
+        function isOnScreen(x, y, radius) {
+            var xHidden = Math.abs(stage.position.x), yHidden = Math.abs(stage.position.y);
+            return x + radius > xHidden && x - radius < xHidden + kWidth && y + radius > yHidden && y - radius < yHidden + kHeight;
+        }
 
         function tick() {
             var currentTime = Date.now();
