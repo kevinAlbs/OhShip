@@ -88,6 +88,10 @@
             }
         };
 
+        this.canFireCannon = function() {
+            return !(currentCannonball && !currentCannonball.isSunk());
+        }
+
         this.attemptCannonFire = function() {
             if (currentCannonball && !currentCannonball.isSunk()) return null;
             console.log("Firing cannon!");

@@ -32,7 +32,7 @@
                     if (cannonball.getPlayerId() == playerId) return;
                     //console.log('Checking', playerId, shipState, cannonballState);
                     if (Math.pow(shipState.x - cannonballState.x, 2) + 
-                        Math.pow(shipState.y - cannonballState.y, 2) < Math.pow(GameConfig.shipRadius / 2, 2)) {
+                        Math.pow(shipState.y - cannonballState.y, 2) < Math.pow(GameConfig.shipRadius / 3, 2)) {
                         console.log("Detected collision");
                         pendingServerUpdates.push(ship.sink());
                         player.ship = null;
@@ -171,7 +171,10 @@
         return {
             tick: tick,
             applyClientMessage: applyClientMessage,
-            forEachPlayerRequestingRefresh: forEachPlayerRequestingRefresh
+            forEachPlayerRequestingRefresh: forEachPlayerRequestingRefresh,
+            // Friend functions to AI only.
+            _getPlayerMap: () => {return playerMap},
+            _getCannonballs: () => {return cannonballs}
         }
     }
     module.exports = Game;

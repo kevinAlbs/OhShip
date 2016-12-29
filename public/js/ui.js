@@ -15,6 +15,12 @@ var UI = (function(){
             type: ClientMessage.type.kSpawn
         });
         setScreen('controls');
+        // Reset current known state.
+        currentState = {
+            leftEngine: 0,
+            rightEngine: 0,
+            cannonRotation: 0
+        };
     }
 
     function onKeyUp(e) {

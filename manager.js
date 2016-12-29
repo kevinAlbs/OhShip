@@ -12,6 +12,7 @@ Messaging should be
     , Stats = require('./stats')
     , ServerResponse = require('./shared/server_response')
     , ClientMessage = require('./shared/client_message')
+    , StupidAI = require('./stupid_ai')
     ;
 
     // Responsible for managing client connections and forwarded decoded messages to/from game.
@@ -23,6 +24,7 @@ Messaging should be
 
         let _idCounter = 0
         , clientMap = new Map()
+        , aiPlayerMap = new Map()
         , game = new Game(idFactory)
         , bufferedClientMessages = []
         ;
@@ -45,7 +47,17 @@ Messaging should be
         }
         
         function _tick() {
+            if (_idCounter < 10) addAIPlayer();
             let startTime = Date.now();
+
+            // Have all AI players act.
+            aiPlayerMap.forEach((ai) => {
+                var aiMessages = ai.act(kFixedDelta, game);
+                if (aiMessages.length > 0) {
+                    bufferedClientMessages = bufferedClientMessages.concat(aiMessages);
+                }
+            });
+            
             // Apply all user messages to game.
             while (bufferedClientMessages.length > 0) {
                 Stats.inc("incoming");
@@ -134,10 +146,14 @@ Messaging should be
                id: aiId,
                type: ClientMessage.type.kSpawn 
             });
+            aiPlayerMap.set(aiId, new StupidAI(aiId));
         }
 
-        function removeAIPlayer() {
-
+        function removeAIPlayer(aiId) {
+            bufferedClientMessages.push({
+               id: aiId,
+               type: ClientMessage.type.kLeave 
+            });
         }
 
         return {
