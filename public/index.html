@@ -214,8 +214,6 @@
                     break;
                 case ServerResponse.type.kSpawn:
                     if (!player) return;
-                    console.log("Nick is ", player.nickname);
-                    console.log(player);
                     // Remove sprites if the player spawns before the sinking animation finished.
                     if (player.ship) player.ship.removeSprites();
                     player.ship = new ClientShip(jsonObj.data, id, player.nickname);
@@ -226,7 +224,6 @@
                     break;
                 case ServerResponse.type.kRefresh:
                     // TODO: clear all ships first
-                    console.log("kRefresh");
                     jsonObj.data.forEach(function(playerData) {
                         if (playerMap.has(playerData.id)) return;
                         var player = {

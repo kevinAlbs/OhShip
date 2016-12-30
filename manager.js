@@ -39,7 +39,6 @@ Messaging should be
 
         function start() {
             wss.on('connection', _onConnect);
-            _tick();
         }
 
         function idFactory() {
@@ -47,6 +46,9 @@ Messaging should be
         }
         
         function _tick() {
+            // Only tick when human players are playing.
+            if (clientMap.size == 0) return;
+
             var totalPlayers = aiPlayerMap.size + clientMap.size;
             // Maintain at least 15 players.
             if (totalPlayers < 15) addAIPlayer();
@@ -113,6 +115,10 @@ Messaging should be
             ws.id = idFactory();
             clientMap.set(ws.id, ws);
             console.log('Connection made ' + ws.id);
+            if (clientMap.size == 1) {
+                // Wake up.
+                _tick();
+            }
 
             ws.on('message', _onMessage);
             ws.on('close', _onClose);
@@ -141,7 +147,6 @@ Messaging should be
         }
 
         function addAIPlayer() {
-            console.log('adding ai player');
             var aiId = idFactory();
             bufferedClientMessages.push({
                 id: aiId,
@@ -157,7 +162,6 @@ Messaging should be
         function removeAIPlayer() {
             if (aiPlayerMap.size == 0) return;
             let aiId = aiPlayerMap.keys().next().value;
-            console.log("removing AI player " + aiId);
             bufferedClientMessages.push({
                id: aiId,
                type: ClientMessage.type.kLeave 

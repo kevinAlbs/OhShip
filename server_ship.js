@@ -94,7 +94,6 @@
 
         this.attemptCannonFire = function() {
             if (currentCannonball && !currentCannonball.isSunk()) return null;
-            console.log("Firing cannon!");
             currentCannonball = new ServerCannonball({
                 x: state.x,
                 y: state.y,

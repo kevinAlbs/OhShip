@@ -33,7 +33,6 @@
                     //console.log('Checking', playerId, shipState, cannonballState);
                     if (Math.pow(shipState.x - cannonballState.x, 2) + 
                         Math.pow(shipState.y - cannonballState.y, 2) < Math.pow(GameConfig.shipRadius / 3, 2)) {
-                        console.log("Detected collision");
                         pendingServerUpdates.push(ship.sink());
                         player.ship = null;
                     }
